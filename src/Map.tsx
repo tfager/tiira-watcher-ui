@@ -15,6 +15,39 @@ interface SightingInfo {
   text: string;
 }
 
+interface Sighting {
+  id: string;
+  species: string;
+  wgsLatitude: number;
+  wgsLongitude: number;
+  date: string;
+  time?: string;
+  extra?: string;
+  county: string;
+  locName: string;
+  birdLatitude?: number;
+  birdLongitude?: number;
+  count: string;
+  osmUrl: string;
+  spotterLatitude: number;
+  spotterLongitude: number;
+  timestamp: number;
+}
+
+interface SightingGroup {
+  locName: string;
+  wgsLatitude: number;
+  wgsLongitude: number;
+  spotterLatitude: number;
+  spotterLongitude: number;
+  birdLatitude?: number;
+  birdLongitude?: number;
+  sightings: Sighting[];
+}
+
+// "locName":"saunakallio.","spotterLatitude":6675565.0,"spotterLongitude":390491.0,"birdLatitude":6675555.0,
+// "birdLongitude":390487.0,"wgsLatitude":60.20208,"wgsLongitude":25.02436
+
 const testSightings = {
   "sightings": [{
     "wgs-latitude": 60.23362, "date": "26.-29.5.2022", "species": "Satakieli",
@@ -31,14 +64,19 @@ const testSightings = {
   }]}
 
 // Get location from browser
+var located = false;
 function LocationMarker() {
     const [position, setPosition] = useState<LatLng>(new LatLng(60.23664, 25.19183))
     const map = useMap()
 
     useEffect(() => {
       map.locate().on("locationfound", function (e : LocationEvent) {
-        setPosition(e.latlng)
-        map.panTo(e.latlng)
+        if (!located) {
+          console.log("Panning to user location "+ e.latlng);
+          setPosition(e.latlng)
+          map.panTo(e.latlng)
+          located = true;
+        }
       },
       )
     })
@@ -58,24 +96,27 @@ const SightingMarker = ({ id, lat, long, text }: SightingInfo) => {
   )
 }
 
-// TODO: Clean up sightings & add more TS
-function SightingMarkers(props: any) {
-  console.log("Props = ", props)
-  return props.sightingGroups === undefined ? null : (
+const sightingGroupToMarker = (g: SightingGroup): SightingInfo => {
+  var popupString = ""
+  var sightings = g.sightings
+  for (var i=0; i<sightings.length; i++) {
+    popupString += (sightings[i]["species"] + " " + (sightings[i].date ?? "") + " "  +
+                   (sightings[i].time ?? "") + "\n")
+  }
+  var s : SightingInfo = {
+    lat: g["wgsLatitude"],
+    long: g["wgsLongitude"],
+    id: "marker-" + g.sightings[0].id,
+    text: popupString
+  };
+  return s;
+}
+
+function SightingMarkers({markers}: { markers: SightingInfo[] | undefined }) {
+  return markers === undefined ? null : (
     <>
-    { props.sightingGroups.map((g: any) => {
-        var popupString = ""
-        var sightings = g.sightings
-        for (var i=0; i<sightings.length; i++) {
-          popupString += (sightings[i]["species"] + " " + sightings[i]["time"] + "<br>\n")
-        }
-        var s : SightingInfo = {
-          lat: g["wgs-latitude"],
-          long: g["wgs-longitude"],
-          id: "marker-" + g.sightings[0].id,
-          text: popupString
-        };
-        return (<SightingMarker {...s}/>)
+    { markers.map((si: SightingInfo) => {
+        return (<SightingMarker {... si}/>)
     })}
     </>
   )
@@ -83,16 +124,16 @@ function SightingMarkers(props: any) {
 
 
 function Map() {
-  const [sightingGroups, setSightingGroups] = useState();
+  const [sightingMarkers, setSightingMarkers] = useState<SightingInfo[]>();
  
   useEffect(() => {
     const fetchData = async () => {
-      // TODO: proper API call
+      // TODO: URL from env var
       const result = await axios(
         'http://localhost:8080/sightings',
       );
  
-      setSightingGroups(() => result.data["sighting-groups"]);
+      setSightingMarkers(() => result.data.sightingGroups.map(sightingGroupToMarker));
     };
  
     fetchData();
@@ -107,7 +148,7 @@ function Map() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <LocationMarker />
-          <SightingMarkers sightingGroups= { sightingGroups } />
+          <SightingMarkers markers= { sightingMarkers } />
         </MapContainer>
       </div>
     )
