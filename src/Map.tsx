@@ -7,12 +7,13 @@ import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import "./Map.css";
 import { LatLng, LocationEvent } from "leaflet";
+import { JsxElement } from "typescript";
 
 interface SightingInfo {
   lat: number;
   long: number;
   id: string;
-  text: string;
+  text: JSX.Element;
 }
 
 interface Sighting {
@@ -95,19 +96,31 @@ const SightingMarker = ({ id, lat, long, text }: SightingInfo) => {
   </Marker>
   )
 }
+//    popupString += (sightings[i]["species"] + " " + (sightings[i].date ?? "") + " "  +
+//                   (sightings[i].time ?? "") + "\n")
 
 const sightingGroupToMarker = (g: SightingGroup): SightingInfo => {
-  var popupString = ""
   var sightings = g.sightings
-  for (var i=0; i<sightings.length; i++) {
-    popupString += (sightings[i]["species"] + " " + (sightings[i].date ?? "") + " "  +
-                   (sightings[i].time ?? "") + "\n")
-  }
+  var popupContent = (
+  <span>
+    <span className="popupLoc">
+      { sightings[0].locName } <br/>
+    </span>
+    {
+      g.sightings.map((s) => {
+        return (
+          <span>
+            { s.species } { s.date ?? "" } { s.time ?? ""}<br/>
+          </span>
+      )})
+    }
+    </span>
+  )
   var s : SightingInfo = {
     lat: g["wgsLatitude"],
     long: g["wgsLongitude"],
     id: "marker-" + g.sightings[0].id,
-    text: popupString
+    text: popupContent
   };
   return s;
 }
