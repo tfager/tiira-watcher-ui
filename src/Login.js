@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { auth, logInWithEmailAndPassword, logout } from "./firebase";
+import { auth, logInWithEmailAndPassword } from "./firebase";
+import { useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import "./Login.css";
 
@@ -15,11 +15,20 @@ function Login() {
       return;
     }
     if (user) navigate("/map");
-  }, [user, loading]);
+  }, [user, loading, navigate]);
+  var errorMsg = "";
+  if (error) {
+     errorMsg = (
+        <div id="error">
+        { error }
+        </div>
+     )
+  }
 
   return (
     <div className="login">
       <div className="login__container">
+        {errorMsg}
         <input
           type="text"
           className="login__textBox"
