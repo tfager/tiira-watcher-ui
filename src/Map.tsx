@@ -5,6 +5,9 @@ import "leaflet/dist/leaflet.css";
 import "./Map.css";
 import { LatLng, LocationEvent } from "leaflet";
 
+const apiUrl = process.env.REACT_APP_WATCHER_API_URL
+if (!apiUrl) throw new Error('API URL not defined')
+
 interface SightingInfo {
   lat: number;
   long: number;
@@ -119,9 +122,8 @@ function Map() {
  
   useEffect(() => {
     const fetchData = async () => {
-      // TODO: URL from env var
       const result = await axios(
-        'http://localhost:8080/sightings',
+        apiUrl + '/sightings',
       );
  
       setSightingMarkers(() => result.data.sightingGroups.map(sightingGroupToMarker));
