@@ -1,6 +1,9 @@
 import './App.css';
+import { createContext } from 'react';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Login from './Login';
+import { auth, User } from "./firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
 import Map from './Map';
 
 // Work around missing marker icon - https://github.com/Leaflet/Leaflet/issues/4968
@@ -14,15 +17,21 @@ L.Icon.Default.mergeOptions({
 });
 // End workaround
 
+export const UserContext = createContext()
+
 function App() {
+  const [user, loading, error] = useAuthState(auth);
+
   return (
     <div className="App">
-      <Router>
-        <Routes>
-          <Route exact path="/" element={ <Login />} />
-          <Route exact path="/map" element={ <Map />} />
-        </Routes>
-      </Router>
+      <UserContext.Provider value={user}>
+		  <Router>
+			<Routes>
+			  <Route exact path="/" element={ <Login />} />
+			  <Route exact path="/map" element={ <Map />} />
+			</Routes>
+		  </Router>
+	  </UserContext.Provider>
     </div>
   );
 }
