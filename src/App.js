@@ -2,7 +2,7 @@ import './App.css';
 import { createContext } from 'react';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Login from './Login';
-import { auth, User } from "./firebase";
+import { auth } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Map from './Map';
 
@@ -20,7 +20,8 @@ L.Icon.Default.mergeOptions({
 export const UserContext = createContext()
 
 function App() {
-  const [user, loading, error] = useAuthState(auth);
+  // user, loading, error
+  const user = useAuthState(auth)[0];
 
   return (
     <div className="App">

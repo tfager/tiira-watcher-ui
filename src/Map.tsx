@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, useMap, Marker, Popup } from 'react-leaflet'
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
@@ -6,7 +6,6 @@ import "./Map.css";
 import { LatLng, LocationEvent } from "leaflet";
 import { auth } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import UserContext from './App.js'
 
 const apiUrl = process.env.REACT_APP_WATCHER_API_URL
 if (!apiUrl) throw new Error('API URL not defined')
@@ -123,7 +122,7 @@ function SightingMarkers({markers}: { markers: SightingInfo[] | undefined }) {
 function Map() {
   const [sightingMarkers, setSightingMarkers] = useState<SightingInfo[]>();
   // TODO.. const user: User = useContext(UserContext)
-  const [user, loading, error] = useAuthState(auth);
+  const user = useAuthState(auth)[0];
 
   useEffect( () => {
     const fetchData = async () => {
