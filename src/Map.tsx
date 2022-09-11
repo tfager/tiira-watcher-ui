@@ -6,6 +6,7 @@ import "./Map.css";
 import { LatLng, LocationEvent } from "leaflet";
 import { auth } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import AreaButtons from "./components/AreaButtons"
 
 const apiUrl = process.env.REACT_APP_WATCHER_API_URL
 if (!apiUrl) throw new Error('API URL not defined')
@@ -156,6 +157,7 @@ function Map() {
           <LocationMarker />
           <SightingMarkers markers= { sightingMarkers } />
         </MapContainer>
+        <AreaButtons />
       </div>
     )
   }
