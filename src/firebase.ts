@@ -1,14 +1,16 @@
 import { initializeApp } from "firebase/app";
 import {
-  getAuth,
-  signInWithEmailAndPassword,
-  signOut
+  getAuth
 } from "firebase/auth";
 
+const apiKey = process.env.REACT_APP_FIREBASE_API_KEY
+if (apiKey == null) {
+  throw new Error("REACT_APP_FIREBASE_API_KEY not defined")
+}
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyBIB2TlVnnUe3jSAOzVYGM2mY8Imb72FXI",
+  apiKey: apiKey,
   authDomain: "tiira-watcher-dev.firebaseapp.com",
   projectId: "tiira-watcher-dev",
   storageBucket: "tiira-watcher-dev.appspot.com",
@@ -20,21 +22,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-const logInWithEmailAndPassword = async (email, password) => {
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
-  }
-};
-
-const logout = () => {
-  signOut(auth);
-};
-
 export {
-  auth,
-  logInWithEmailAndPassword,
-  logout
+  auth
 };

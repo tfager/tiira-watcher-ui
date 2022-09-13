@@ -1,34 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { auth, logInWithEmailAndPassword } from "./firebase";
+import { useAuth } from './components/AuthProvider'
 import { useNavigate } from "react-router-dom";
-import { useAuthState } from "react-firebase-hooks/auth";
 import "./Login.css";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [user, loading, error] = useAuthState(auth);
+  const {user, login} = useAuth();
   const navigate = useNavigate();
-  useEffect(() => {
-    if (loading) {
-      // maybe trigger a loading screen
-      return;
-    }
+
+  const loggedIn = () => {
     if (user) navigate("/map");
-  }, [user, loading, navigate]);
-  var errorMsg = "";
-  if (error) {
-     errorMsg = (
-        <div id="error">
-        { error }
-        </div>
-     )
   }
+
+  useEffect(() => {
+    if (user) navigate("/map");
+  }, [user, navigate]);
 
   return (
     <div className="login">
       <div className="login__container">
-        {errorMsg}
         <input
           type="text"
           className="login__textBox"
@@ -45,7 +36,7 @@ function Login() {
         />
         <button
           className="login__btn"
-          onClick={() => logInWithEmailAndPassword(email, password)}
+          onClick={() => login(email, password, loggedIn)}
         >
           Login
         </button>

@@ -57,7 +57,6 @@ function LocationMarker() {
     useEffect(() => {
       map.locate().on("locationfound", function (e : LocationEvent) {
         if (!located) {
-          console.log("Panning to user location "+ e.latlng);
           setPosition(e.latlng)
           map.panTo(e.latlng)
           located = true;
@@ -122,17 +121,14 @@ function SightingMarkers({markers}: { markers: SightingInfo[] | undefined }) {
 
 function Map() {
   const [sightingMarkers, setSightingMarkers] = useState<SightingInfo[]>();
-  // TODO.. const user: User = useContext(UserContext)
   const user = useAuthState(auth)[0];
 
   useEffect( () => {
     const fetchData = async () => {
-	  console.log("User = ", user)
 	  var token: string = "";
 	  if (user != null) {
 		  var tokenResult = await user.getIdTokenResult();
 		  token = tokenResult.token
-		  console.log("Got tokenResult, token = " + token)
 	  }
       const result = await axios.get(
         apiUrl + '/sightings',

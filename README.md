@@ -7,4 +7,6 @@ React &amp; Typescript UI for tiira-watcher with OpenStreetMap embedding
 
 ## Misc notes
 
+For local running, do `cp .production.env .local.env` and edit accordingly.
+
 Needed to install(/mark as exception) autoprefixer to fix [this](https://stackoverflow.com/questions/72511039/autoprefixer-replace-color-adjust-to-print-color-adjust-the-color-adjust-short)

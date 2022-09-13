@@ -36,3 +36,26 @@
     transform: rotate(360deg);
   }
 }
+
+.topHeader {
+  background-color: #282c34;
+  min-height: 6vh;
+  width: 100%;
+  color: white;
+}
+
+.titleText {
+  font-size: calc(10px + 2vmin);
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  padding: 1vmin;
+}
+
+.loginInfo {
+  position: absolute;
+  font-size: 2vh;
+  right: 0px;
+  top: 0px;
+  padding: 1vmin;
+}
