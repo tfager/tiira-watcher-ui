@@ -8,6 +8,7 @@ import {
 
 interface AuthContextType {
     user: any;
+    getToken: () => Promise<string|null>,
     login: (email: string, password: string, callback: VoidFunction) => void;
     logout: (callback: VoidFunction) => void;
   }
@@ -42,6 +43,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return auth.currentUser
   }
 
+  async function getToken(): Promise<string|null> {
+    if (auth.currentUser != null) {
+      return await auth.currentUser.getIdToken(false);
+    }
+    return null
+  }
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
         if (user !== null) {
@@ -56,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user: currentUser,
     getUser,
+    getToken,
     login,
     logout
   }

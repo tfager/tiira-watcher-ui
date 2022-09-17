@@ -131,7 +131,7 @@ function Map() {
 		  token = tokenResult.token
 	  }
       const result = await axios.get(
-        apiUrl + '/sightings',
+        `${apiUrl}/sightings?daysBefore=2`,
         { headers: {
 		   'Authorization': `Bearer ${token}`
 		}},
