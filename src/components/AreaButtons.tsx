@@ -5,6 +5,17 @@ import { useAuth } from "./AuthProvider";
 const apiUrl = process.env.REACT_APP_WATCHER_API_URL
 if (!apiUrl) throw new Error('API URL not defined')
 
+const AREAS = new Map<string, string>()
+AREAS.set("tikkurila", "Tikkurila")
+AREAS.set("vuosaari", "Vuosaari")
+AREAS.set("espoo", "Espoo")
+AREAS.set("kirkkonummi", "Kirkkonummi")
+AREAS.set("laajasalo", "Laajasalo")
+AREAS.set("viikki", "Viikki")
+AREAS.set("itauusimaa", "Itä-Uusimaa")
+AREAS.set("pks", "Pääkaupunkiseutu")
+AREAS.set("pori", "Pori")
+
 interface SearchResponse {
   status: string
 
@@ -49,10 +60,12 @@ const SearchButton = ({ area, areaName }: ButtonProps) => {
 }
 
 export default function AreaButtons() {
-
-    return (
-      <div className="buttonArea">
-        <SearchButton area="pks" areaName="PKS" />
-      </div>
-    )
+	return (
+	  <div className="buttonArea">
+		  { Array.from(AREAS.keys()).map ( (area) => {
+	   	    return (<SearchButton area={ area } areaName={ AREAS.get(area)! } />)
+        })
+ 	    }
+	  </div>
+	)
 }
