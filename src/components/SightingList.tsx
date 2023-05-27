@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React from "react";
 import { SightingGroup, Sighting } from "../services/SightingService";
 
 export default function SightingList({sightingGroups}: {sightingGroups: SightingGroup[] | undefined}) {
