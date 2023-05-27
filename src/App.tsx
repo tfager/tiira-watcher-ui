@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from './components/AuthProvider'
 
 // Work around missing marker icon - https://github.com/Leaflet/Leaflet/issues/4968
 import L from 'leaflet';
+import SightingList from './components/SightingList';
 //delete L.Icon.Default.prototype._getIconUrl;
 
 L.Icon.Default.mergeOptions({
@@ -29,7 +30,7 @@ function App() {
               <RequireAuth>
                 <Map />
               </RequireAuth>
-              } />
+            } />
           </Routes>
         </Router>
   	  </AuthProvider>

@@ -1,52 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, useMap, Marker, Popup } from 'react-leaflet'
-import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import "./Map.css";
 import { LatLng, LocationEvent } from "leaflet";
 import { auth } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import AreaButtons from "./components/AreaButtons"
-
-const apiUrl = process.env.REACT_APP_WATCHER_API_URL
-if (!apiUrl) throw new Error('API URL not defined')
-
-interface SightingInfo {
-  lat: number;
-  long: number;
-  id: string;
-  text: JSX.Element;
-}
-
-interface Sighting {
-  id: string;
-  species: string;
-  wgsLatitude: number;
-  wgsLongitude: number;
-  date: string;
-  time?: string;
-  extra?: string;
-  county: string;
-  locName: string;
-  birdLatitude?: number;
-  birdLongitude?: number;
-  count: string;
-  osmUrl: string;
-  spotterLatitude: number;
-  spotterLongitude: number;
-  timestamp: number;
-}
-
-interface SightingGroup {
-  locName: string;
-  wgsLatitude: number;
-  wgsLongitude: number;
-  spotterLatitude: number;
-  spotterLongitude: number;
-  birdLatitude?: number;
-  birdLongitude?: number;
-  sightings: Sighting[];
-}
+import SightingList from "./components/SightingList";
+import { fetchSightings, SightingInfo, SightingGroup } from "./services/SightingService";
 
 // Get location from browser
 var located = false;
@@ -118,28 +79,23 @@ function SightingMarkers({markers}: { markers: SightingInfo[] | undefined }) {
   )
 }
 
-
 function Map() {
-  const [sightingMarkers, setSightingMarkers] = useState<SightingInfo[]>();
+  const [sightingMarkers, setSightingMarkers] = useState<SightingInfo[]>()
+  const [sightingGroups, setSightingGroups] = useState<SightingGroup[]>()
   const user = useAuthState(auth)[0];
 
   useEffect( () => {
-    const fetchData = async () => {
-	  var token: string = "";
-	  if (user != null) {
-		  var tokenResult = await user.getIdTokenResult();
-		  token = tokenResult.token
-	  }
-      const result = await axios.get(
-        `${apiUrl}/sightings?daysBefore=2`,
-        { headers: {
-		   'Authorization': `Bearer ${token}`
-		}},
-      );
-      setSightingMarkers(() => result.data.sightingGroups.map(sightingGroupToMarker));
-    };
- 
-    fetchData();
+    // Wrap into an async function to be able to return (empty) cleanup function
+    (async() => {
+      if (user != null) {
+        // user (AuthStateHook) ensured to be of type User
+        const sGroups = await fetchSightings(user);
+        // TODO: Feed data from fetchSightings to SightingList as well, maybe ungrouped
+        setSightingMarkers(() => sGroups.map(sightingGroupToMarker))
+        setSightingGroups(() => sGroups)
+      }
+    })()
+    return () => {}
   }, [user]);
 
     return (
@@ -154,6 +110,7 @@ function Map() {
           <SightingMarkers markers= { sightingMarkers } />
         </MapContainer>
         <AreaButtons />
+        <SightingList sightingGroups = { sightingGroups }/>
       </div>
     )
   }
