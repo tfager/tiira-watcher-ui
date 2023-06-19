@@ -1,4 +1,4 @@
-import React, { MutableRefObject, useRef } from "react";
+import React, { MutableRefObject } from "react";
 import { SightingGroup, Sighting } from "../services/SightingService";
 
 function constructGoogleMapsDirectionsLink(name: string, latitude: number, longitude: number): string {
