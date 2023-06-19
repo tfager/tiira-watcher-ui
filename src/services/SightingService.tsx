@@ -4,13 +4,6 @@ import { User } from "firebase/auth";
 const apiUrl = process.env.REACT_APP_WATCHER_API_URL
 if (!apiUrl) throw new Error('API URL not defined')
 
-interface SightingInfo {
-    lat: number;
-    long: number;
-    id: string;
-    text: JSX.Element;
-}
-
 
 interface Sighting {
     id: string;
@@ -60,5 +53,5 @@ async function fetchSightings(user: User): Promise<SightingGroup[]> {
 }
 
 export { fetchSightings };
-export type { SightingInfo, SightingGroup, Sighting };
+export type { SightingGroup, Sighting };
 

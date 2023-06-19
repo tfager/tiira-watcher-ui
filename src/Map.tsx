@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, useMap, Marker, Popup } from 'react-leaflet'
+import React, { MutableRefObject, useEffect, useRef, useState } from "react";
+import { MapContainer, TileLayer, useMap, Marker, Popup, CircleMarker } from 'react-leaflet'
 import "leaflet/dist/leaflet.css";
 import "./Map.css";
 import { LatLng, LocationEvent } from "leaflet";
@@ -7,7 +7,18 @@ import { auth } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import AreaButtons from "./components/AreaButtons"
 import SightingList from "./components/SightingList";
-import { fetchSightings, SightingInfo, SightingGroup } from "./services/SightingService";
+import { fetchSightings, SightingGroup } from "./services/SightingService";
+
+interface SightingInfo {
+  lat: number;
+  long: number;
+  id: string;
+  count: number;
+  text: JSX.Element;
+  setSelectedSightingId?: (sg: string) => void | null;
+}
+
+
 
 // Get location from browser
 var located = false;
@@ -33,11 +44,43 @@ function LocationMarker() {
     )
   }
 
-const SightingMarker = ({ id, lat, long, text }: SightingInfo) => {
+  const SightingMarker = ({ id, lat, long, count, text, setSelectedSightingId }: SightingInfo) => {
+    function getMarkerRadius(count: number): number {
+      var radius = count + 13
+      if (radius > 30) radius = 30
+      return radius
+    }
+
+    function getMarkerColor(count: number): string {
+      if (count > 20) count = 20
+      const lightness = 5 + count * (75.0 / 20)
+      const hue = 120;
+      const saturation = 100
+      const alpha = 70; // 70% opacity
+      const color = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha}%)`; // Combine values into HSLA color string
+      return color;    }
+
   return (
-   <Marker key={ id } position={ [lat, long]}>
+   <CircleMarker
+       key={ id }
+       center={ [lat, long]}
+       radius={ getMarkerRadius(count)}
+       fillColor={getMarkerColor(count)}
+       fillOpacity={0.8}
+       stroke={false}
+       eventHandlers={{
+        click: () => {
+          const parts = id.split('-');
+          const sightingId = parts[1] || '';
+          console.log("About to setSelectedSightingId: " + sightingId)
+
+          if (setSelectedSightingId != null) {
+            setSelectedSightingId(sightingId)
+            console.log("setSelectedSightingId: " + sightingId)
+          }
+        }}}>
     <Popup>{ text }</Popup>
-  </Marker>
+  </CircleMarker>
   )
 }
 //    popupString += (sightings[i]["species"] + " " + (sightings[i].date ?? "") + " "  +
@@ -53,7 +96,7 @@ const sightingGroupToMarker = (g: SightingGroup): SightingInfo => {
     {
       g.sightings.map((s) => {
         return (
-          <span>
+          <span id = { s.id }>
             { s.species } { s.date ?? "" } { s.time ?? ""}<br/>
           </span>
       )})
@@ -64,16 +107,19 @@ const sightingGroupToMarker = (g: SightingGroup): SightingInfo => {
     lat: g["wgsLatitude"],
     long: g["wgsLongitude"],
     id: "marker-" + g.sightings[0].id,
+    count: g.sightings.length,
     text: popupContent
   };
   return s;
 }
 
-function SightingMarkers({markers}: { markers: SightingInfo[] | undefined }) {
+function SightingMarkers({markers, setSelectedSightingId }: {
+    markers: SightingInfo[] | undefined,
+    setSelectedSightingId: (sg: string) => void }) {
   return markers === undefined ? null : (
     <>
     { markers.map((si: SightingInfo) => {
-        return (<SightingMarker {... si}/>)
+        return (<SightingMarker id = {si.id} long={si.long} lat={si.lat} count={si.count} text={si.text} setSelectedSightingId={setSelectedSightingId} />)
     })}
     </>
   )
@@ -82,7 +128,22 @@ function SightingMarkers({markers}: { markers: SightingInfo[] | undefined }) {
 function Map() {
   const [sightingMarkers, setSightingMarkers] = useState<SightingInfo[]>()
   const [sightingGroups, setSightingGroups] = useState<SightingGroup[]>()
+  const [selectedSightingId, setSelectedSightingId] = useState<string>()
+  const childRefs = useRef<{[key: string]: HTMLDivElement | null}>({})
+
   const user = useAuthState(auth)[0];
+
+  const handleMarkerSelected = (id: string) => {
+    console.log("Selected sighting " + id)
+    setSelectedSightingId(id)
+    scrollToChild(id)
+  }
+
+  const scrollToChild = (id: string) => {
+		const childRef = childRefs.current[id];
+		childRef?.scrollIntoView({ behavior: 'smooth' });
+	};
+
 
   useEffect( () => {
     // Wrap into an async function to be able to return (empty) cleanup function
@@ -90,7 +151,6 @@ function Map() {
       if (user != null) {
         // user (AuthStateHook) ensured to be of type User
         const sGroups = await fetchSightings(user);
-        // TODO: Feed data from fetchSightings to SightingList as well, maybe ungrouped
         setSightingMarkers(() => sGroups.map(sightingGroupToMarker))
         setSightingGroups(() => sGroups)
       }
@@ -107,10 +167,10 @@ function Map() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <LocationMarker />
-          <SightingMarkers markers= { sightingMarkers } />
+          <SightingMarkers markers = { sightingMarkers } setSelectedSightingId = { (id) => handleMarkerSelected(id) }/>
         </MapContainer>
         <AreaButtons />
-        <SightingList sightingGroups = { sightingGroups }/>
+        <SightingList sightingGroups = { sightingGroups } selected = { selectedSightingId } childRefs = { childRefs }/>
       </div>
     )
   }
