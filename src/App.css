@@ -59,3 +59,11 @@
   top: 0px;
   padding: 1vmin;
 }
+
+.buttonArea {
+  width: 80%;
+}
+
+.buttonArea button {
+  display: inline-block;
+}
