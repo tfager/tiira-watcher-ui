@@ -81,6 +81,11 @@ jobs:
       - name: Set version
         run: echo "VERSION=$(fgrep '"version"' package.json | cut -d "\"" -f 4)" | tee -a $GITHUB_ENV
 
+      - name: Store version file
+        run: |
+          echo $VERSION > ui_version.txt
+          gcloud storage cp ui_version.txt gs://${{ secrets.GCR_PROJECT }}-terraform-backend/app_versions/
+
       # Build and push image to Google Container Registry
       - name: Build & Push
         run: |-
