@@ -15,6 +15,8 @@ AREAS.set("viikki", "Viikki")
 AREAS.set("itauusimaa", "Itä-Uusimaa")
 AREAS.set("pks", "Pääkaupunkiseutu")
 AREAS.set("pori", "Pori")
+AREAS.set("uto", "Utö")
+AREAS.set("virolahti", "Virolahti")
 
 interface SearchResponse {
   status: string
