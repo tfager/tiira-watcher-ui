@@ -8,7 +8,6 @@ jobs:
         uses: ./.github/workflows/gcr-build.yml
         with:
             environment: dev
-            GCR_PROJECT: ${{ vars.GCR_PROJECT }}
         secrets:
             GCR_SA_KEY: ${{ secrets.GCR_SA_KEY }}
             FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
