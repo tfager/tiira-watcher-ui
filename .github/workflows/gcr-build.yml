@@ -50,18 +50,9 @@ jobs:
 
       - name: Substitute env vars
         run: |
-          echo "GCR_PROJECT=$GCR_PROJECT"
-          echo "GCR_PROJECT input = ${{ inputs.GCR_PROJECT }}"
-          echo "GCR_PROJECT var = ${{ vars.GCR_PROJECT }}"
-          echo "GCR_PROJECT env = ${{ env.GCR_PROJECT }}"
-          echo "GCR_PROJECT input+env = $GCR_PROJECT_I"
-          echo "GCR_PROJECT var+env = GCR_PROJECT_V"
           cp .production.env .production.env.tmp
           envsubst < .production.env.tmp > .production.env
           rm .production.env.tmp 
-        env:
-          GCR_PROJECT_I: ${{ inputs.GCR_PROJECT }}
-          GCR_PROJECT_V: ${{ vars.GCR_PROJECT }}
       - name: Build Production
         run: yarn run build:production
 
@@ -75,6 +66,7 @@ jobs:
     name: Deploy to GCR
     needs: build
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
 
     steps:
       - name: Checkout Repo
