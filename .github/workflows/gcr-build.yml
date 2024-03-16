@@ -12,8 +12,6 @@ on:
         description: GCP project id
         required: true
     secrets:
-      GCR_PROJECT:
-        required: true
       GCR_SA_KEY:
         required: true
       FIREBASE_API_KEY:
