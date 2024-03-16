@@ -5,11 +5,13 @@ on:
             - main
 
 jobs:
-    build:
-        uses: ./.github/workflows/gcr-build.yml
-        with:
-            environment: prod
-        secrets:
-            GCR_PROJECT: ${{ secrets.GCR_PROJECT }}
-            GCR_SA_KEY: ${{ secrets.GCR_SA_KEY }}
-            FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+  build:
+    uses: ./.github/workflows/gcr-build.yml
+    with:
+      environment: prod
+      GCR_PROJECT: ${{ env.GCR_PROJECT }}
+    secrets:
+      GCR_SA_KEY: ${{ secrets.GCR_SA_KEY }}
+      FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+      
+
