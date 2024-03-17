@@ -19,6 +19,7 @@ env:
   SERVICE_NAME: tiira-watcher-ui
   REPO_NAME: tiira-watcher-repo
   FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+  API_GW_URL: ${{ vars.API_GW_URL }}
 
 jobs:
   build:
