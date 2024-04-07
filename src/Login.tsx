@@ -6,7 +6,7 @@ import "./Login.css";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const {user, login} = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
 
   const loggedIn = () => {

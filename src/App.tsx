@@ -20,11 +20,11 @@ function App() {
   return (
     <div className="App">
       <AuthProvider>
-      <Router>
-        <Header />
+        <Router>
+          <Header />
           <Routes>
-            <Route path="/" element={ <MainPage />} />
-            <Route path="/login" element={ <Login />} />
+            <Route path="/" element={<MainPage />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/map" element={
               <RequireAuth>
                 <Map />
@@ -32,7 +32,7 @@ function App() {
             } />
           </Routes>
         </Router>
-  	  </AuthProvider>
+      </AuthProvider>
     </div>
   );
 }
@@ -43,7 +43,7 @@ function MainPage() {
       <p>An app for rendering bird sightings on a map.</p>
 
       <p><Link to="/map">Go to map</Link></p>
-      
+
     </div>
 
   )
@@ -56,11 +56,11 @@ function Header() {
   if (auth.user != null) {
     loginInfo = (
       <div id='loginInfo' className='loginInfo'>
-      <span>Welcome { auth.user.email }</span><br />
-      <span><button onClick={() => {
+        <span>Welcome {auth.user.email}</span><br />
+        <span><button onClick={() => {
           auth.logout(() => navigate("/"))
-         }}>Log out</button>
-       </span>
+        }}>Log out</button>
+        </span>
       </div>
     )
   } else {
@@ -72,12 +72,12 @@ function Header() {
   return (
     <div className='topHeader'>
       <div className='titleText'>
-      Tiira-watcher
+        Tiira-watcher
       </div>
       <div id='topMessage' className='topMessage'>
 
       </div>
-      { loginInfo }
+      {loginInfo}
     </div>
   )
 }
