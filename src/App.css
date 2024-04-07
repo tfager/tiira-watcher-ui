@@ -67,3 +67,7 @@
 .buttonArea button {
   display: inline-block;
 }
+
+.error {
+  color: red;
+}

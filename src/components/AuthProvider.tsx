@@ -8,6 +8,7 @@ import {
 
 interface AuthContextType {
   user: any;
+  loginError: string;
   getToken: () => Promise<string | null>,
   login: (email: string, password: string, callback: VoidFunction) => void;
   logout: (callback: VoidFunction) => void;
@@ -22,6 +23,7 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User>()
   const [loading, setLoading] = useState(false)
+  const [loginError, setLoginError] = useState("")
 
   async function login(email: string, password: string, callback: VoidFunction) {
     try {
@@ -29,8 +31,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       var result = await signInWithEmailAndPassword(auth, email, password)
       callback()
       return result
-    } catch (err) {
+    } catch (err: any) {
+      setLoading(false)
       console.log(err)
+      setLoginError(err["message"])
     }
   }
 
@@ -63,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     user: currentUser,
+    loginError: loginError,
     getUser,
     getToken,
     login,
