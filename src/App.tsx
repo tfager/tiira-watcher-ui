@@ -1,7 +1,7 @@
 import './App.css';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, Link, useNavigate } from "react-router-dom";
 import Login from './Login';
-import Map from './Map';
+import MainScreen from './components/MainScreen';
 import { AuthProvider, useAuth } from './components/AuthProvider'
 
 // Work around missing marker icon - https://github.com/Leaflet/Leaflet/issues/4968
@@ -27,7 +27,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/map" element={
               <RequireAuth>
-                <Map />
+                <MainScreen />
               </RequireAuth>
             } />
           </Routes>

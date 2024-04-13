@@ -35,6 +35,13 @@ interface SightingGroup {
   sightings: Sighting[];
 }
 
+interface SearchRequest {
+  id: string;
+  area: string;
+  timestamp: number;
+  searchStatus: string;
+  user: string;
+}
 
 async function fetchSightings(user: User): Promise<SightingGroup[]> {
   var token: string = "";
@@ -52,6 +59,22 @@ async function fetchSightings(user: User): Promise<SightingGroup[]> {
   return result.data.sightingGroups
 }
 
-export { fetchSightings };
-export type { SightingGroup, Sighting };
+async function fetchSearchRequests(user: User): Promise<SearchRequest[]> {
+  var token: string = "";
+  if (user != null) {
+    var tokenResult = await user.getIdTokenResult();
+    token = tokenResult.token
+  }
+  const result = await axios.get(
+    `${apiUrl}/search`,
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+  return result.data.results
+}
+
+export { fetchSightings, fetchSearchRequests };
+export type { SightingGroup, Sighting, SearchRequest };
 

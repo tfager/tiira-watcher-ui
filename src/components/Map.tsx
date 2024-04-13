@@ -1,13 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useImperativeHandle, useState } from "react";
 import { MapContainer, TileLayer, useMap, Marker, Popup, CircleMarker } from 'react-leaflet'
 import "leaflet/dist/leaflet.css";
 import "./Map.css";
 import { LatLng, LocationEvent } from "leaflet";
-import { auth } from "./firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-import AreaButtons from "./components/AreaButtons"
-import SightingList from "./components/SightingList";
-import { fetchSightings, SightingGroup } from "./services/SightingService";
+import { SightingGroup } from "../services/SightingService";
 
 interface SightingInfo {
   lat: number;
@@ -17,8 +13,6 @@ interface SightingInfo {
   text: JSX.Element;
   setSelectedSightingId?: (sg: string) => void | null;
 }
-
-
 
 // Get location from browser
 var located = false;
@@ -129,54 +123,42 @@ function SightingMarkers({ markers, setSelectedSightingId }: {
   )
 }
 
-function Map() {
-  const [sightingMarkers, setSightingMarkers] = useState<SightingInfo[]>()
-  const [sightingGroups, setSightingGroups] = useState<SightingGroup[]>()
-  const [selectedSightingId, setSelectedSightingId] = useState<string>()
-  const childRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
-
-  const user = useAuthState(auth)[0];
-
-  const handleMarkerSelected = (id: string) => {
-    console.log("Selected sighting " + id)
-    setSelectedSightingId(id)
-    scrollToChild(id)
-  }
-
-  const scrollToChild = (id: string) => {
-    const childRef = childRefs.current[id];
-    childRef?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-
-  useEffect(() => {
-    // Wrap into an async function to be able to return (empty) cleanup function
-    (async () => {
-      if (user != null) {
-        // user (AuthStateHook) ensured to be of type User
-        const sGroups = await fetchSightings(user);
-        setSightingMarkers(() => sGroups.map(sightingGroupToMarker))
-        setSightingGroups(() => sGroups)
-      }
-    })()
-    return () => { }
-  }, [user]);
-
-  return (
-    <div className="tiiraMap">
-      <MapContainer center={[51.505, -0.09]} zoom={13} scrollWheelZoom={true}
-        style={{ height: "500px", width: "80%" }}>
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <LocationMarker />
-        <SightingMarkers markers={sightingMarkers} setSelectedSightingId={(id) => handleMarkerSelected(id)} />
-      </MapContainer>
-      <AreaButtons />
-      <SightingList sightingGroups={sightingGroups} selected={selectedSightingId} childRefs={childRefs} />
-    </div>
-  )
+export type MapState = {
+  setSightingGroups(sgs: SightingGroup[]): void;
 }
+
+export type MapProps = {
+  sightingGroups: SightingGroup[] | undefined,
+  childRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>,
+  handleMarkerSelected: (id: string) => void
+}
+
+// Map is a forwardRef component, so it can be used in a parent component
+// See https://articles.wesionary.team/how-to-update-the-internal-state-of-the-child-component-from-the-parent-component-3975a73c12ba
+
+const Map = React.forwardRef<MapState, MapProps>(
+  ({sightingGroups, childRefs, handleMarkerSelected}, ref) => {
+    const [sightingMarkers, setSightingMarkers] = useState<SightingInfo[]>()
+
+    useImperativeHandle(ref, () => ({
+      setSightingGroups: (sgs: SightingGroup[]) => {
+        setSightingMarkers(() => sgs.map(sightingGroupToMarker))
+      }
+    }));
+
+    return (
+      <div className="tiiraMap">
+        <MapContainer center={[51.505, -0.09]} zoom={13} scrollWheelZoom={true}
+          style={{ height: "500px", width: "80%" }}>
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <LocationMarker />
+          <SightingMarkers markers={sightingMarkers} setSelectedSightingId={(id) => handleMarkerSelected(id)} />
+        </MapContainer>
+      </div>
+    )
+  })
 
 export default Map;
