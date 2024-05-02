@@ -11,6 +11,7 @@ const MainScreen: React.FC = () => {
   const [sightingGroups, setSightingGroups] = useState<SightingGroup[]>()
   const [selectedSightingId, setSelectedSightingId] = useState<string>()
   const childRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
+  const [needRefreshSightings, setNeedRefreshSightings] = useState(true)
 
   const handleMarkerSelected = (id: string) => {
     console.log("Selected sighting " + id)
@@ -29,22 +30,28 @@ const MainScreen: React.FC = () => {
   useEffect(() => {
     // Wrap into an async function to be able to return (empty) cleanup function
     (async () => {
-      if (user != null) {
+      if (user != null && needRefreshSightings) {
         // user (AuthStateHook) ensured to be of type User
         const sGroups = await fetchSightings(user);
         mapRef.current?.setSightingGroups(sGroups);
         setSightingGroups(() => sGroups)
+        setNeedRefreshSightings(false)
       }
     })()
     return () => { }
-  }, [user]);
+  }, [user, needRefreshSightings]);
+
+  const searchReqsCompletedCallback = () => {
+    console.log("Search requests completed, refreshing sightings")
+    setNeedRefreshSightings(true)
+  }
 
 
   return (
     <div>
       <Map key="map" ref={mapRef} sightingGroups={sightingGroups} childRefs={childRefs} handleMarkerSelected={handleMarkerSelected} />
       <AreaButtons key="areabuttons" />
-      <SearchRequests key="searchrequests" />
+      <SearchRequests key="searchrequests" searchReqsCompletedCallback={searchReqsCompletedCallback} />
       <SightingList key="sightinglist" sightingGroups={sightingGroups} selected={selectedSightingId} childRefs={childRefs} />
     </div>
   );

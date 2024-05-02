@@ -31,7 +31,7 @@ const testFetchSearchReqsEmpty = () => new Promise<SearchRequest[]>((resolve, re
   //reject([])
 })
 
-export default function SearchRequests() {
+export default function SearchRequests({searchReqsCompletedCallback}: {searchReqsCompletedCallback: () => void}) {
   const [searchRequests, setSearchRequests] = useState<SearchRequest[]>([]);
   const user = useAuthState(auth)[0];
   const timerIdRef = useRef<NodeJS.Timer | null>(null);
@@ -51,8 +51,8 @@ export default function SearchRequests() {
         if (allDone) {
           setIsPollingEnabled(false);
           console.log("End polling for search requests ("+ searchReqs.length + " requests)");
-        // TODO: if more than one req, signal fetch sightings
-      }
+          searchReqsCompletedCallback();
+        }
       }
     }
 
@@ -82,7 +82,7 @@ export default function SearchRequests() {
       stopPolling();
     };
   },
-    [user, isPollingEnabled]);
+    [user, isPollingEnabled, searchReqsCompletedCallback]);
 
   return (
     <div className="searchreqlist">
