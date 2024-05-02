@@ -13,24 +13,6 @@ const getStatusClass = (status: string) => {
   }
 }
 
-const testFetchSearchReqs = () => new Promise<SearchRequest[]>((resolve, reject) => {
-  // a resolved promise after certain hours
-  setTimeout(() => {
-      console.log("testFetchSearchReqs: resolving")
-      return resolve([{ 'id': '1', 'area': 'test', 'searchStatus': 'SEARCHING', timestamp: 100, user: 'TODO' }])
-  }, 1000)
-  //reject([])
-})
-
-const testFetchSearchReqsEmpty = () => new Promise<SearchRequest[]>((resolve, reject) => {
-  // a resolved promise after certain hours
-  setTimeout(() => {
-      console.log("testFetchSearchReqs: resolving")
-      return resolve([])
-  }, 1000) // resolves after 1s
-  //reject([])
-})
-
 export default function SearchRequests({searchReqsCompletedCallback}: {searchReqsCompletedCallback: () => void}) {
   const [searchRequests, setSearchRequests] = useState<SearchRequest[]>([]);
   const user = useAuthState(auth)[0];
