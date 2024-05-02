@@ -42,10 +42,10 @@ const MainScreen: React.FC = () => {
 
   return (
     <div>
-      <Map ref={mapRef} sightingGroups={sightingGroups} childRefs={childRefs} handleMarkerSelected={handleMarkerSelected} />
-      <AreaButtons />
-      <SearchRequests />
-      <SightingList sightingGroups={sightingGroups} selected={selectedSightingId} childRefs={childRefs} />
+      <Map key="map" ref={mapRef} sightingGroups={sightingGroups} childRefs={childRefs} handleMarkerSelected={handleMarkerSelected} />
+      <AreaButtons key="areabuttons" />
+      <SearchRequests key="searchrequests" />
+      <SightingList key="sightinglist" sightingGroups={sightingGroups} selected={selectedSightingId} childRefs={childRefs} />
     </div>
   );
 };

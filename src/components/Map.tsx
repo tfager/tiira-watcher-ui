@@ -92,7 +92,7 @@ const sightingGroupToMarker = (g: SightingGroup): SightingInfo => {
       {
         g.sightings.map((s) => {
           return (
-            <span id={s.id}>
+            <span key={s.id} id={s.id}>
               {s.species} {s.date ?? ""} {s.time ?? ""}<br />
             </span>
           )
@@ -117,7 +117,7 @@ function SightingMarkers({ markers, setSelectedSightingId }: {
   return markers === undefined ? null : (
     <>
       {markers.map((si: SightingInfo) => {
-        return (<SightingMarker id={si.id} long={si.long} lat={si.lat} count={si.count} text={si.text} setSelectedSightingId={setSelectedSightingId} />)
+        return (<SightingMarker key={si.id} id={si.id} long={si.long} lat={si.lat} count={si.count} text={si.text} setSelectedSightingId={setSelectedSightingId} />)
       })}
     </>
   )

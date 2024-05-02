@@ -72,7 +72,7 @@ async function fetchSearchRequests(user: User): Promise<SearchRequest[]> {
         'Authorization': `Bearer ${token}`
       }
     })
-  return result.data.results
+return result.data.results.sort((a: SearchRequest, b: SearchRequest) => b.timestamp - a.timestamp).slice(0, 3)
 }
 
 export { fetchSightings, fetchSearchRequests };

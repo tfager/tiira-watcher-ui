@@ -67,7 +67,7 @@ export default function AreaButtons() {
   return (
     <div className="buttonArea">
       {Array.from(AREAS.keys()).map((area) => {
-        return (<SearchButton area={area} areaName={AREAS.get(area)!} />)
+        return (<SearchButton key={area} area={area} areaName={AREAS.get(area)!} />)
       })
       }
     </div>
