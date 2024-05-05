@@ -1,17 +1,18 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { auth } from '../firebase'
 import {
-    signInWithEmailAndPassword,
-    signOut,
-    User
-  } from "firebase/auth"
+  signInWithEmailAndPassword,
+  signOut,
+  User
+} from "firebase/auth"
 
 interface AuthContextType {
-    user: any;
-    getToken: () => Promise<string|null>,
-    login: (email: string, password: string, callback: VoidFunction) => void;
-    logout: (callback: VoidFunction) => void;
-  }
+  user: any;
+  loginError: string;
+  getToken: () => Promise<string | null>,
+  login: (email: string, password: string, callback: VoidFunction) => void;
+  logout: (callback: VoidFunction) => void;
+}
 
 const AuthContext = createContext<AuthContextType>(null!)
 
@@ -22,15 +23,18 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User>()
   const [loading, setLoading] = useState(false)
+  const [loginError, setLoginError] = useState("")
 
   async function login(email: string, password: string, callback: VoidFunction) {
     try {
-        setLoading(true)
-        var result = await signInWithEmailAndPassword(auth, email, password)
-        callback()
-        return result
-    } catch (err) {
-        console.log(err)
+      setLoading(true)
+      var result = await signInWithEmailAndPassword(auth, email, password)
+      callback()
+      return result
+    } catch (err: any) {
+      setLoading(false)
+      console.log(err)
+      setLoginError(err["message"])
     }
   }
 
@@ -43,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return auth.currentUser
   }
 
-  async function getToken(): Promise<string|null> {
+  async function getToken(): Promise<string | null> {
     if (auth.currentUser != null) {
       return await auth.currentUser.getIdToken(false);
     }
@@ -52,10 +56,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
-        if (user !== null) {
-            setCurrentUser(user!)
-            setLoading(false)
-        }
+      if (user !== null) {
+        setCurrentUser(user!)
+        setLoading(false)
+      }
     })
 
     return unsubscribe
@@ -63,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     user: currentUser,
+    loginError: loginError,
     getUser,
     getToken,
     login,
@@ -71,8 +76,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={value}>
-      { !loading && children }
-      { loading && <div>Checking auth</div> }
+      {!loading && children}
+      {loading && <div>Checking auth</div>}
     </AuthContext.Provider>
   )
 

@@ -1,0 +1,50 @@
+.searchreqlist {
+    width: 80%;
+    border-radius: 4px;
+    border-style: outset;
+    border-color: darkgreen;
+    border-width: 1px;
+    text-align: left;
+    padding: 8px;
+    margin: 4px;
+}
+
+.searchreqentry {
+    width: 100%;
+    padding: 8px;
+}
+
+.searchreqstatus {
+    width: 5em;
+    padding: 4px;
+    display: inline-block;
+}
+
+.searchreqts {
+    width: 10em;
+    display: inline-block;
+}
+
+.searchreqid {
+    width: 20em;
+    font-size: smaller;
+    display: inline-block;
+}
+
+.searchreqarea {
+    width: 8em;
+    display: inline-block;
+
+}
+
+.searchreqstatussearching {
+    width: 4em;
+    background-color: antiquewhite;
+    display: inline-block;
+}
+
+.searchreqstatusdone {
+    width: 4em;
+    background-color: lightgreen;
+    display: inline-block;
+}

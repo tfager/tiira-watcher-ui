@@ -22,8 +22,8 @@ interface SearchResponse {
   status: string
 
 }
-async function search(area: string, setSearching: (isSearching: boolean) => void, token: Promise<string|null>) {
-	console.log("Would search: " + area)
+async function search(area: string, setSearching: (isSearching: boolean) => void, token: Promise<string | null>) {
+  console.log("Would search: " + area)
   setSearching(true)
   try {
     // https://www.bezkoder.com/react-query-axios-typescript/#Define_Data_Type
@@ -31,11 +31,13 @@ async function search(area: string, setSearching: (isSearching: boolean) => void
     let tokenStr = await token
     let result = await axios.post<SearchResponse>(apiUrl + '/search',
       { area: area },
-      { headers: {
-         'Authorization': `Bearer ${tokenStr}`
-      }})
-     setSearching(false)
-     return result
+      {
+        headers: {
+          'Authorization': `Bearer ${tokenStr}`
+        }
+      })
+    setSearching(false)
+    return result
   } catch (error) {
     console.log("Search call failed", error)
     setSearching(false)
@@ -50,24 +52,24 @@ type ButtonProps = {
 
 // https://github.com/piotrwitek/react-redux-typescript-guide#react--redux-in-typescript---complete-guide
 const SearchButton = ({ area, areaName }: ButtonProps) => {
-    var [searching, setSearching] = useState(false)
-    let auth = useAuth()
+  var [searching, setSearching] = useState(false)
+  let auth = useAuth()
 
-    return (
-      <button disabled = { searching }
-              onClick={ (event: MouseEvent) => { search(area, setSearching, auth.getToken()); }} >
-              { (searching ? "Searching..." : `Search ${areaName}`) }
-              </button>
-    )
+  return (
+    <button disabled={searching}
+      onClick={(event: MouseEvent) => { search(area, setSearching, auth.getToken()); }} >
+      {(searching ? "Searching..." : `Search ${areaName}`)}
+    </button>
+  )
 }
 
 export default function AreaButtons() {
-	return (
-	  <div className="buttonArea">
-		  { Array.from(AREAS.keys()).map ( (area) => {
-	   	    return (<SearchButton area={ area } areaName={ AREAS.get(area)! } />)
-        })
- 	    }
-	  </div>
-	)
+  return (
+    <div className="buttonArea">
+      {Array.from(AREAS.keys()).map((area) => {
+        return (<SearchButton key={area} area={area} areaName={AREAS.get(area)!} />)
+      })
+      }
+    </div>
+  )
 }

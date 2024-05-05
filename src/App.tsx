@@ -1,7 +1,7 @@
 import './App.css';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, Link, useNavigate } from "react-router-dom";
 import Login from './Login';
-import Map from './Map';
+import MainScreen from './components/MainScreen';
 import { AuthProvider, useAuth } from './components/AuthProvider'
 
 // Work around missing marker icon - https://github.com/Leaflet/Leaflet/issues/4968
@@ -20,19 +20,19 @@ function App() {
   return (
     <div className="App">
       <AuthProvider>
-      <Router>
-        <Header />
+        <Router>
+          <Header />
           <Routes>
-            <Route path="/" element={ <MainPage />} />
-            <Route path="/login" element={ <Login />} />
+            <Route path="/" element={<MainPage />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/map" element={
               <RequireAuth>
-                <Map />
+                <MainScreen />
               </RequireAuth>
             } />
           </Routes>
         </Router>
-  	  </AuthProvider>
+      </AuthProvider>
     </div>
   );
 }
@@ -43,7 +43,7 @@ function MainPage() {
       <p>An app for rendering bird sightings on a map.</p>
 
       <p><Link to="/map">Go to map</Link></p>
-      
+
     </div>
 
   )
@@ -56,11 +56,11 @@ function Header() {
   if (auth.user != null) {
     loginInfo = (
       <div id='loginInfo' className='loginInfo'>
-      <span>Welcome { auth.user.email }</span><br />
-      <span><button onClick={() => {
+        <span>Welcome {auth.user.email}</span><br />
+        <span><button onClick={() => {
           auth.logout(() => navigate("/"))
-         }}>Log out</button>
-       </span>
+        }}>Log out</button>
+        </span>
       </div>
     )
   } else {
@@ -72,12 +72,12 @@ function Header() {
   return (
     <div className='topHeader'>
       <div className='titleText'>
-      Tiira-watcher
+        Tiira-watcher
       </div>
       <div id='topMessage' className='topMessage'>
 
       </div>
-      { loginInfo }
+      {loginInfo}
     </div>
   )
 }

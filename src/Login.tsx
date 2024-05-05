@@ -3,10 +3,22 @@ import { useAuth } from './components/AuthProvider'
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
+function LoginError({errorText}: {errorText: string}) {
+  if (errorText !== "") {
+    return (
+      <div className="error">
+        <p>{errorText}</p>
+      </div>
+    );
+  } else {
+    return null;
+  }
+} 
+
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const {user, login} = useAuth();
+  const { user, loginError, login } = useAuth();
   const navigate = useNavigate();
 
   const loggedIn = () => {
@@ -20,6 +32,7 @@ function Login() {
   return (
     <div className="login">
       <div className="login__container">
+        <LoginError errorText={loginError} />
         <input
           type="text"
           className="login__textBox"

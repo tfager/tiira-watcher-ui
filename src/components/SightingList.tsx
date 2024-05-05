@@ -11,7 +11,7 @@ const SightingListEntry = React.forwardRef<HTMLDivElement, { sightingGroup: Sigh
   const { sightingGroup, isSelected } = props
   const mapSighting = (s: Sighting) => {
     return (
-      <span> {s.id} {s.date} {s.species} {s.count} {s.extra}<br /></span>
+      <span key={s.id}> {s.id} {s.date} {s.species} {s.count} {s.extra}<br /></span>
     )
   }
   const selClassName = (isSelected ? "sightinggroupsel" : "")

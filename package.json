@@ -1,6 +1,6 @@
 {
   "name": "tiira-watcher-ui",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",
@@ -31,11 +31,11 @@
     "autoprefixer": "10.4.5"
   },
   "scripts": {
-    "start": "env-cmd -f .local.env react-scripts start",
-    "build": "env-cmd -f .local.env react-scripts build",
-    "test": "env-cmd -f .local.env react-scripts test",
+    "start": "./node_modules/.bin/env-cmd -f .local.env react-scripts start",
+    "build": "react-scripts build",
+    "test": "./node_modules/.bin/env-cmd -f .local.env react-scripts test",
     "eject": "react-scripts eject",
-    "build:production": "env-cmd -f .production.env react-scripts build"
+    "build:production": "./node_modules/.bin/env-cmd -f .production.env react-scripts build"
   },
   "eslintConfig": {
     "extends": [
@@ -56,7 +56,7 @@
     ]
   },
   "devDependencies": {
-    "@types/leaflet": "^1.7.10",
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@types/leaflet": "^1.7.10"
   }
 }
