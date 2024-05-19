@@ -9,4 +9,4 @@ jobs:
             environment: dev
         secrets:
             GCR_SA_KEY: ${{ secrets.GCR_SA_KEY }}
-            FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+            REACT_ENV: ${{ secrets.REACT_ENV }}

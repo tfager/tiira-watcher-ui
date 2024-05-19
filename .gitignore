@@ -105,4 +105,8 @@ dist
 
 .idea
 build/
+.production.env
+.dev.env
 .local.env
+
+
