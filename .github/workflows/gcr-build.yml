@@ -10,7 +10,7 @@ on:
     secrets:
       GCR_SA_KEY:
         required: true
-      FIREBASE_API_KEY:
+      REACT_ENV:
         required: true
 
 env:
@@ -18,8 +18,7 @@ env:
   RUN_REGION: europe-north1
   SERVICE_NAME: tiira-watcher-ui
   REPO_NAME: tiira-watcher-repo
-  FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-  API_GW_URL: ${{ vars.API_GW_URL }}
+  REACT_ENV: ${{ secrets.REACT_ENV }}
 
 jobs:
   build:
@@ -51,9 +50,8 @@ jobs:
 
       - name: Substitute env vars
         run: |
-          cp .production.env .production.env.tmp
-          envsubst < .production.env.tmp > .production.env
-          rm .production.env.tmp 
+          echo $REACT_ENV > .production.env
+
       - name: Build Production
         run: yarn run build:production
 
