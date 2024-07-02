@@ -71,3 +71,13 @@
 .error {
   color: red;
 }
+
+.loctrackbox {
+  border-radius: 4px;
+  border-style: outset;
+  border-color: darkgreen;
+  border-width: 1px;
+  text-align: left;
+  padding: 8px;
+  margin: 4px;
+}
