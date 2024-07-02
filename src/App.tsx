@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, Link, us
 import Login from './Login';
 import MainScreen from './components/MainScreen';
 import { AuthProvider, useAuth } from './components/AuthProvider'
+import { TiiraWatcherProvider } from './components/TiiraWatcherContext';
 
 // Work around missing marker icon - https://github.com/Leaflet/Leaflet/issues/4968
 import L from 'leaflet';
@@ -20,18 +21,20 @@ function App() {
   return (
     <div className="App">
       <AuthProvider>
-        <Router>
-          <Header />
-          <Routes>
-            <Route path="/" element={<MainPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/map" element={
-              <RequireAuth>
-                <MainScreen />
-              </RequireAuth>
-            } />
-          </Routes>
-        </Router>
+        <TiiraWatcherProvider>
+          <Router>
+            <Header />
+            <Routes>
+              <Route path="/" element={<MainPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/map" element={
+                <RequireAuth>
+                  <MainScreen />
+                </RequireAuth>
+              } />
+            </Routes>
+          </Router>
+        </TiiraWatcherProvider>
       </AuthProvider>
     </div>
   );
