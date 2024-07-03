@@ -8,23 +8,28 @@ const MIN_RADIUS = 10;
 const MAX_RADIUS = 30;
 const POLL_INTERVAL_SECS = 15;
 
-interface TraceEntry {
+export interface TraceEntry {
     pos: LatLng;
     timestamp: Date;
     radius: number;
 }
 
 const addNewEntry = (entries: TraceEntry[], pos: LatLng, timestamp:Date): TraceEntry[] => {
+    // If MAX_ENTRIES is exceeded, first one is discarded and last one becomes the new
     var tmpEntries = entries.length < MAX_ENTRIES ?
         [...entries, { pos, timestamp, radius: MIN_RADIUS }] :
         [...entries.slice(1), { pos, timestamp, radius: MIN_RADIUS }]
     var radiusInterval = (MAX_RADIUS - MIN_RADIUS) / tmpEntries.length
-    // TODO: Change radius/color by time elapsec
+    // TODO: Change radius/color by time elapsed
     // TODO: Don't add if same location, only update timestamp
     for (var i = 0; i < tmpEntries.length; i++) {
         tmpEntries[i].radius = MIN_RADIUS + (radiusInterval * i);
     }
     return tmpEntries
+}
+
+export const _private = {
+    addNewEntry
 }
 
 const LocationTrace = ():  JSX.Element => {
