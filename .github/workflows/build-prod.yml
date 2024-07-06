@@ -11,6 +11,6 @@ jobs:
       environment: prod
     secrets:
       GCR_SA_KEY: ${{ secrets.GCR_SA_KEY }}
-      REACT_ENV: ${{ secrets.REACT_ENV }}
+      REACT_ENV_B64: ${{ secrets.REACT_ENV_B64 }}
       
 

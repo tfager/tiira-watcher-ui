@@ -10,7 +10,7 @@ on:
     secrets:
       GCR_SA_KEY:
         required: true
-      REACT_ENV:
+      REACT_ENV_B64:
         required: true
 
 env:
@@ -18,7 +18,7 @@ env:
   RUN_REGION: europe-north1
   SERVICE_NAME: tiira-watcher-ui
   REPO_NAME: tiira-watcher-repo
-  REACT_ENV: ${{ secrets.REACT_ENV }}
+  REACT_ENV_B64: ${{ secrets.REACT_ENV_B64 }}
 
 jobs:
   build:
@@ -50,11 +50,7 @@ jobs:
 
       - name: Substitute env vars
         run: |
-          echo $REACT_ENV > .production.env
-
-      - name: Testing
-        run: |
-          cat .production.env
+          echo "$REACT_ENV_B64" | base64 -d > .production.env
 
       - name: Build Production
         run: yarn run build:production
