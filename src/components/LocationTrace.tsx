@@ -58,11 +58,6 @@ export const _private = {
     addNewEntry
 }
 
-const colorFor = (timeRelative: number): string => {
-    let value = Math.floor((100-timeRelative) * 2)
-    return "rgb(255," + value +","+ value + ")"
-}
-
 const LocationTrace = ():  JSX.Element => {
     const [entries, setEntries] = useState<TraceEntry[]>([])
     const map = useMap()
