@@ -20,6 +20,12 @@ Env secrets:
 * `REACT_ENV`: contents of the `.production.env` or `.dev.env` file
 * `GCR_SA_KEY` contents of the service account JSON from Google cloud platform project setup
 
+## Testing dev build
+
+`npm run build:dev`
+
+`npx serve -s build`
+
 ## Misc notes
 
 For local running, do `cp .dev.env .local.env` and edit accordingly.
