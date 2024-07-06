@@ -1,35 +1,66 @@
-import { LatLng, LocationEvent } from "leaflet";
-import React, { useEffect, useRef, useState } from "react";
+import { LatLng, LocationEvent } from "leaflet"
+import React, { useEffect, useRef, useState } from "react"
 import { CircleMarker, useMap } from 'react-leaflet'
-import { useTiiraWatcherState } from "./TiiraWatcherContext";
+import { useTiiraWatcherState } from "./TiiraWatcherContext"
 
-const MAX_ENTRIES = 15;
-const MIN_RADIUS = 10;
-const MAX_RADIUS = 30;
-const POLL_INTERVAL_SECS = 15;
+const MAX_ENTRIES = 15
+const POLL_INTERVAL_SECS = 30
+const SAME_LOC_LATLNG_THRESHOLD = 0.00001
+const RADIUS = 5
+
 
 export interface TraceEntry {
-    pos: LatLng;
-    timestamp: Date;
-    radius: number;
+    pos: LatLng
+    timestamp: Date
+    timeRelative: number  // 0 for earliest, 100 for most recent
 }
 
 const addNewEntry = (entries: TraceEntry[], pos: LatLng, timestamp:Date): TraceEntry[] => {
+    // Don't add if same location again, only update timestamp
+    var sameLoc = false
+    var tmpEntries: TraceEntry[] = []
+    if (entries.length > 0) {
+        const mostRecent = entries[entries.length - 1]
+        if (Math.abs(pos.lat - mostRecent.pos.lat) < SAME_LOC_LATLNG_THRESHOLD &&
+            Math.abs(pos.lng - mostRecent.pos.lng) < SAME_LOC_LATLNG_THRESHOLD) {
+            tmpEntries = [...entries]
+            tmpEntries[tmpEntries.length - 1].timestamp = timestamp
+            sameLoc = true
+        }
+    }
     // If MAX_ENTRIES is exceeded, first one is discarded and last one becomes the new
-    var tmpEntries = entries.length < MAX_ENTRIES ?
-        [...entries, { pos, timestamp, radius: MIN_RADIUS }] :
-        [...entries.slice(1), { pos, timestamp, radius: MIN_RADIUS }]
-    var radiusInterval = (MAX_RADIUS - MIN_RADIUS) / tmpEntries.length
-    // TODO: Change radius/color by time elapsed
-    // TODO: Don't add if same location, only update timestamp
+    if (!sameLoc) {
+        tmpEntries = entries.length < MAX_ENTRIES ?
+            [...entries, { pos, timestamp, timeRelative: 100 }] :
+            [...entries.slice(1), { pos, timestamp, timeRelative: 100 }]
+    }
+        
+    var minTime = tmpEntries[0].timestamp.valueOf()
+    var maxTime = tmpEntries[tmpEntries.length - 1].timestamp.valueOf()
+    var timeDiff = maxTime - minTime
     for (var i = 0; i < tmpEntries.length; i++) {
-        tmpEntries[i].radius = MIN_RADIUS + (radiusInterval * i);
+        tmpEntries[i] = {
+            ...tmpEntries[i],
+            timeRelative: (100 * (tmpEntries[i].timestamp.valueOf() - minTime)) / timeDiff
+        }
+    }
+    if (tmpEntries.length === 1) {
+        tmpEntries[0] = {
+            ...tmpEntries[0],
+            timeRelative: 100
+        }
     }
     return tmpEntries
 }
 
+// For unit testing
 export const _private = {
     addNewEntry
+}
+
+const colorFor = (timeRelative: number): string => {
+    let value = Math.floor((100-timeRelative) * 2)
+    return "rgb(255," + value +","+ value + ")"
 }
 
 const LocationTrace = ():  JSX.Element => {
@@ -40,7 +71,6 @@ const LocationTrace = ():  JSX.Element => {
 
     useEffect(() => {
         const pollingCallback = async () => {
-            console.log("Getting location")
             map.locate().on("locationfound", function (e: LocationEvent) {
                 setEntries(addNewEntry(entries, e.latlng, new Date()))
             }, 5000)
@@ -50,7 +80,6 @@ const LocationTrace = ():  JSX.Element => {
             // Polling every POLL_INTERVAL seconds
             if (timerIdRef.current == null) {
               timerIdRef.current = setInterval(pollingCallback, POLL_INTERVAL_SECS * 1000);
-              console.log("New location polling timer started, ID " + timerIdRef.current)
             }
         };
       
@@ -58,7 +87,6 @@ const LocationTrace = ():  JSX.Element => {
         if (timerIdRef.current!= null)
             clearInterval(timerIdRef.current);
             timerIdRef.current = null;
-            console.log(`Stopped polling with ${timerIdRef}`)
         };
     
         if (state.locationPollingEnabled) {
@@ -71,12 +99,16 @@ const LocationTrace = ():  JSX.Element => {
             stopPolling()
         }
     }, [entries, map, timerIdRef, state.locationPollingEnabled])
-    console.log("LocationTrace: ", entries)
-
+    // Mind https://stackoverflow.com/questions/67148553/react-leaflet-polyline-does-not-change-colour-despite-colour-value-in-redux-sto:
+    // Use pathOptions, not just color/opacity.
     return (
         <div>
             {entries.map((entry, i) => (
-                <CircleMarker key={"loctrace"+i} center={entry.pos} radius={entry.radius} />
+                <CircleMarker key={"loctrace"+entry.timestamp.valueOf()}
+                              center={entry.pos}
+                              radius={RADIUS}
+                              color="rgb(255,0,0)"
+                              pathOptions={ {opacity: 0.4 + 0.006*entry.timeRelative} }/>
             ))}
             
         </div>
