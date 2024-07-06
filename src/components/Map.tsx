@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import "./Map.css";
 import { LatLng, LocationEvent } from "leaflet";
 import { SightingGroup } from "../services/SightingService";
+import LocationTrace from "./LocationTrace";
 
 interface SightingInfo {
   lat: number;
@@ -155,6 +156,7 @@ const Map = React.forwardRef<MapState, MapProps>(
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <LocationMarker />
+          <LocationTrace />
           <SightingMarkers markers={sightingMarkers} setSelectedSightingId={(id) => handleMarkerSelected(id)} />
         </MapContainer>
       </div>
