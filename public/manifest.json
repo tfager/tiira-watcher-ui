@@ -1,25 +1,42 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "id": "/?source=pwa",
+  "short_name": "Tiira-watcher",
+  "name": "Tiira-watcher",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "tern_icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "1920x1920"
     },
     {
-      "src": "logo192.png",
+      "src": "tern_icon_64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "tern_icon_192.png",
       "type": "image/png",
       "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#3b7dcd",
+  "background_color": "#3b7dcd",
+  "description": "Bird sightings in Finland",
+  "screenshots": [
+    {
+      "src": "Tiira-watcher_Screenshot_narrow.png",
+      "type": "image/png",
+      "sizes": "680x1042",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "Tiira-watcher_Screenshot_wide.png",
+      "type": "image/png",
+      "sizes": "1715x982",
+      "form_factor": "wide"
+    }
+  ]
+  
 }
