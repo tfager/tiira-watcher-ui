@@ -1,7 +1,8 @@
 FROM node:23.7-alpine3.20 AS build
 
 WORKDIR /app
-ARG BUILD_ENV # "dev" or "production"
+# "dev" or "production". Note, GHA always puts env-specific settings to .production.env
+ARG BUILD_ENV="production" 
 
 COPY . ./
 RUN npm install

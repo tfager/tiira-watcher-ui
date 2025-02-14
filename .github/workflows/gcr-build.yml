@@ -63,6 +63,4 @@ jobs:
         with:
           push: true
           context: .
-          build-args: |
-            BUILD_ENV=${{ inputs.environment }}
           tags: "${{ env.RUN_REGION }}-docker.pkg.dev/${{ env.GCR_PROJECT }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ env.VERSION }}"
