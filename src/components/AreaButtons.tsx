@@ -2,7 +2,7 @@ import React, { useState, MouseEvent } from "react";
 import axios from "axios";
 import { useAuth } from "./AuthProvider";
 
-const apiUrl = process.env.REACT_APP_WATCHER_API_URL
+const apiUrl = import.meta.env.REACT_APP_WATCHER_API_URL
 if (!apiUrl) throw new Error('API URL not defined')
 
 const AREAS = new Map<string, string>()

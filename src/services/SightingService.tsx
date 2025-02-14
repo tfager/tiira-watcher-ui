@@ -1,7 +1,7 @@
 import axios from "axios";
 import { User } from "firebase/auth";
 
-const apiUrl = process.env.REACT_APP_WATCHER_API_URL
+const apiUrl = import.meta.env.REACT_APP_WATCHER_API_URL
 if (!apiUrl) throw new Error('API URL not defined')
 
 

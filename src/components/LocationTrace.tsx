@@ -1,5 +1,5 @@
 import { LatLng, LocationEvent } from "leaflet"
-import React, { useEffect, useRef, useState } from "react"
+import React, { JSX, useEffect, useRef, useState } from "react"
 import { CircleMarker, useMap } from 'react-leaflet'
 import { useTiiraWatcherState } from "./TiiraWatcherContext"
 
@@ -62,7 +62,7 @@ const LocationTrace = ():  JSX.Element => {
     const [entries, setEntries] = useState<TraceEntry[]>([])
     const map = useMap()
     const state = useTiiraWatcherState()
-    const timerIdRef = useRef<NodeJS.Timer | null>(null);
+    const timerIdRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         const pollingCallback = async () => {

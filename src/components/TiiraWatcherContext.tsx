@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React, { JSX, createContext, useContext, useReducer } from "react";
 
 const initialState = (): TiiraWatcherState => {
     return {
