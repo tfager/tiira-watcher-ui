@@ -7,6 +7,7 @@ import { TiiraWatcherProvider } from './components/TiiraWatcherContext';
 
 // Work around missing marker icon - https://github.com/Leaflet/Leaflet/issues/4968
 import L from 'leaflet';
+import { JSX } from 'react';
 //delete L.Icon.Default.prototype._getIconUrl;
 
 L.Icon.Default.mergeOptions({

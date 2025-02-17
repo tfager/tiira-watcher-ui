@@ -30,52 +30,9 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Setup Node.js (NPM)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.x'
-
-      - name: Use cached node_modules
-        uses: actions/cache@master
-        with:
-          path: node_modules
-          key: nodeModules-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            nodeModules-
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-        env:
-          CI: true
-
       - name: Substitute env vars
         run: |
           echo "$REACT_ENV_B64" | base64 -d > .production.env
-
-      - name: Build Production
-        run: yarn run build:production
-
-      - name: Archive Production Artifact
-        uses: actions/upload-artifact@main
-        with:
-          name: build
-          path: build
-
-  deploy-gcr:
-    name: Deploy to GCR
-    needs: build
-    runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
-
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-
-      - name: Download Artifact
-        uses: actions/download-artifact@main
-        with:
-          name: build
-          path: docker/build
 
       - name: Setup GCloud Auth
         id: auth
@@ -102,8 +59,8 @@ jobs:
           gcloud auth configure-docker ${{ env.RUN_REGION }}-docker.pkg.dev --quiet
 
       - name: Build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
-          context: ./docker
+          context: .
           tags: "${{ env.RUN_REGION }}-docker.pkg.dev/${{ env.GCR_PROJECT }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ env.VERSION }}"

@@ -24,7 +24,18 @@ Env secrets:
 
 `npm run build:dev`
 
-`npx serve -s build`
+`npx serve -s dist`
+
+## Testing docker
+
+`./build.sh`
+
+`./local-run.sh`
+
+## Deploying
+
+Takes place from GHA workflow: PR build builds the docker image (including nginx), which is pushed to GCP artifact registry.
+Terraform in tiira-watcher project handles the deployment to cloud run. 
 
 ## Misc notes
 
