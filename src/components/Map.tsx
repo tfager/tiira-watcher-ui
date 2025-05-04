@@ -1,4 +1,4 @@
-import React, { JSX, useEffect, useImperativeHandle, useState } from "react";
+import React, { JSX, useEffect, useImperativeHandle, useState, useRef } from "react";
 import { MapContainer, TileLayer, useMap, Marker, Popup, CircleMarker } from 'react-leaflet'
 import "leaflet/dist/leaflet.css";
 import "./Map.css";
@@ -68,11 +68,9 @@ const SightingMarker = ({ id, lat, long, count, text, setSelectedSightingId }: S
         click: () => {
           const parts = id.split('-');
           const sightingId = parts[1] || '';
-          console.log("About to setSelectedSightingId: " + sightingId)
 
           if (setSelectedSightingId != null) {
             setSelectedSightingId(sightingId)
-            console.log("setSelectedSightingId: " + sightingId)
           }
         }
       }}>
@@ -111,17 +109,11 @@ const sightingGroupToMarker = (g: SightingGroup): SightingInfo => {
   return s;
 }
 
-function SightingMarkers({ markers, setSelectedSightingId }: {
-  markers: SightingInfo[] | undefined,
+function getSightingMarker({ si, setSelectedSightingId }: {
+  si: SightingInfo,
   setSelectedSightingId: (sg: string) => void
 }) {
-  return markers === undefined ? null : (
-    <>
-      {markers.map((si: SightingInfo) => {
-        return (<SightingMarker key={si.id} id={si.id} long={si.long} lat={si.lat} count={si.count} text={si.text} setSelectedSightingId={setSelectedSightingId} />)
-      })}
-    </>
-  )
+  return (<SightingMarker key={si.id} id={si.id} long={si.long} lat={si.lat} count={si.count} text={si.text} setSelectedSightingId={setSelectedSightingId} />)
 }
 
 export type MapState = {
@@ -138,18 +130,61 @@ export type MapProps = {
 // See https://articles.wesionary.team/how-to-update-the-internal-state-of-the-child-component-from-the-parent-component-3975a73c12ba
 
 const Map = React.forwardRef<MapState, MapProps>(
-  ({sightingGroups, childRefs, handleMarkerSelected}, ref) => {
-    const [sightingMarkers, setSightingMarkers] = useState<SightingInfo[]>()
+  ({ sightingGroups, childRefs, handleMarkerSelected }, ref) => {
+    const [sightingMarkers, setSightingMarkers] = useState<SightingInfo[]>([]);
+    const [unProcessed, setUnProcessed] = useState<number>(0);
+    const [totalSightings, setTotalSightings] = useState<number>(0);
+    const processIndex = useRef(0);
+    const runId = useRef(0); // Ref to store the current run ID
+
+    const processChunkOfSightings = (sgs: SightingGroup[], currentRunId: number) => {
+      // Check if the current runId matches the ref's runId. If not, abort.
+      if (currentRunId !== runId.current) {
+        console.log("Aborting processChunk because setSightingGroups was called again");
+        return;
+      }
+
+      const chunkSize = 10; // Adjust chunk size as needed
+      const currentChunk = sgs.slice(processIndex.current, processIndex.current + chunkSize);
+
+      if (currentChunk.length > 0) {
+        // Transform the chunk to markers
+        const newMarkers = currentChunk.map(sightingGroupToMarker);
+
+        // Update state with new markers
+        setSightingMarkers((prevMarkers) => [...prevMarkers, ...newMarkers]);
+        processIndex.current += chunkSize;
+        setUnProcessed(processIndex.current)
+
+        // Use requestAnimationFrame or setTimeout to avoid blocking the UI
+        requestAnimationFrame(() => {
+          processChunkOfSightings(sgs, currentRunId); // Pass the currentRunId to the next iteration
+        });
+      } else {
+        setUnProcessed(0);
+        processIndex.current = 0; // Reset index for next update
+      }
+    };
 
     useImperativeHandle(ref, () => ({
       setSightingGroups: (sgs: SightingGroup[]) => {
-        setSightingMarkers(() => sgs.map(sightingGroupToMarker))
+        // Increment the runId
+        runId.current = runId.current + 1;
+        const currentRunId = runId.current; // Capture the current runId
+
+        setUnProcessed(sgs.length);
+        setTotalSightings(sgs.length);
+        setSightingMarkers([]); // Clear existing markers
+        processIndex.current = 0; // Reset the index
+        processChunkOfSightings(sgs, currentRunId); // Pass the currentRunId to processChunk
       }
     }));
 
+    const progressTxt = `${unProcessed} / ${totalSightings} sightings loaded`
+    const markers = sightingMarkers.map((si) => getSightingMarker({ si, setSelectedSightingId: handleMarkerSelected }))
     return (
       <div className="tiiraMap">
-        <MapContainer center={[51.505, -0.09]} zoom={13} scrollWheelZoom={true}
+        <MapContainer center={[60.23664, 25.19183]} zoom={13} scrollWheelZoom={true}
           style={{ height: "500px", width: "80%" }}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -157,8 +192,9 @@ const Map = React.forwardRef<MapState, MapProps>(
           />
           <LocationMarker />
           <LocationTrace />
-          <SightingMarkers markers={sightingMarkers} setSelectedSightingId={(id) => handleMarkerSelected(id)} />
+          {(sightingMarkers.length > 0) && markers}
         </MapContainer>
+        {(unProcessed > 0) && <div>{progressTxt}</div>}
       </div>
     )
   })
