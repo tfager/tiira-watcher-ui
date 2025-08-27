@@ -1,4 +1,4 @@
-FROM node:23.11-alpine3.20 AS build
+FROM node:24.6-alpine AS build
 
 WORKDIR /app
 # "dev" or "production". Note, GHA always puts env-specific settings to .production.env
