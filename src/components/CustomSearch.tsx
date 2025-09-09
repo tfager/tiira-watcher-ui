@@ -6,7 +6,7 @@ import { User } from "firebase/auth"
 
 const CustomSearchButton = ({ km, mapRef, createSearchRequest }: {
   km : number,
-  mapRef: React.RefObject<MapState>,
+  mapRef: React.ForwardedRef<MapState>,
   createSearchRequest: (req: SearchRequest, setSearching: SearchingFuncType, user: User | null) => Promise<SearchResponse | undefined>
 }) => {
   var [searching, setSearching] = useState(false)
@@ -14,8 +14,9 @@ const CustomSearchButton = ({ km, mapRef, createSearchRequest }: {
   return (
     <button disabled={searching}
       onClick={(event: MouseEvent) => {
-        if (mapRef.current) {
-            const center = mapRef.current.getMapCenter()
+        if (mapRef != null && (mapRef as React.RefObject<MapState>).current) {
+            let map = mapRef as React.RefObject<MapState>
+            const center = map.current.getMapCenter()
             if (!center) {
               console.log("Map center not available")
               return
@@ -34,7 +35,7 @@ const CustomSearchButton = ({ km, mapRef, createSearchRequest }: {
   )
 }
 
-export default function CustomSearch( { mapRef }: { mapRef: React.RefObject<MapState> } ) {
+export default function CustomSearch( { mapRef }: { mapRef: React.ForwardedRef<MapState> } ) {
   return (
     <div className="box">
         <span>Search at map center: 
