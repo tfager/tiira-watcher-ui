@@ -14,7 +14,7 @@ const TrackLocationCheckBox = () => {
   }
 
   return (
-    <div className='loctrackbox'>
+    <div className='box'>
         <input type="checkbox" name="location_tracking" id="location_tracking" onChange={handleChange} checked={state.locationPollingEnabled}/>
         <label htmlFor="location_tracking">Track location</label>
     </div>

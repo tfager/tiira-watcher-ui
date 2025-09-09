@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from 'react';
-import { SearchRequest, fetchSearchRequests } from '../services/SightingService';
+import { SearchRequestComplete, fetchSearchRequests } from '../services/SightingService';
 import { auth } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import "./SearchRequests.css";
@@ -14,7 +14,7 @@ const getStatusClass = (status: string) => {
 }
 
 export default function SearchRequests({searchReqsCompletedCallback}: {searchReqsCompletedCallback: () => void}) {
-  const [searchRequests, setSearchRequests] = useState<SearchRequest[]>([]);
+  const [searchRequests, setSearchRequests] = useState<SearchRequestComplete[]>([]);
   const user = useAuthState(auth)[0];
   const timerIdRef = useRef<NodeJS.Timeout | null>(null);
   const [isPollingEnabled, setIsPollingEnabled] = useState(true);

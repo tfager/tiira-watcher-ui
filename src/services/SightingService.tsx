@@ -36,8 +36,18 @@ interface SightingGroup {
 }
 
 interface SearchRequest {
+    area?: string;
+    center_lon?: number;
+    center_lat?: number;
+    diag_half_km?: number;
+}
+
+interface SearchResponse {
+  status: string
+}
+
+interface SearchRequestComplete extends SearchRequest {
   id: string;
-  area: string;
   timestamp: number;
   searchStatus: string;
   user: string;
@@ -59,7 +69,7 @@ async function fetchSightings(user: User): Promise<SightingGroup[]> {
   return result.data.sightingGroups
 }
 
-async function fetchSearchRequests(user: User): Promise<SearchRequest[]> {
+async function fetchSearchRequests(user: User): Promise<SearchRequestComplete[]> {
   var token: string = "";
   if (user != null) {
     var tokenResult = await user.getIdTokenResult();
@@ -72,9 +82,42 @@ async function fetchSearchRequests(user: User): Promise<SearchRequest[]> {
         'Authorization': `Bearer ${token}`
       }
     })
-return result.data.results.sort((a: SearchRequest, b: SearchRequest) => b.timestamp - a.timestamp).slice(0, 3)
+return result.data.results.sort((a: SearchRequestComplete, b: SearchRequestComplete) => b.timestamp - a.timestamp).slice(0, 3)
 }
 
-export { fetchSightings, fetchSearchRequests };
-export type { SightingGroup, Sighting, SearchRequest };
+type SearchingFuncType = (searching: boolean) => void;
+
+async function createSearchRequest(req: SearchRequest, setSearching: SearchingFuncType, user: User | null): Promise<SearchResponse | undefined> {
+  const txt = `area=${req.area}, center=(${req.center_lat},${req.center_lon}), diag_half_km=${req.diag_half_km}`
+  console.log("Would search: " + txt)
+  setSearching(true)
+  var token: string = "";
+  if (user != null) {
+    var tokenResult = await user.getIdTokenResult();
+    token = tokenResult.token
+    try {
+      // https://www.bezkoder.com/react-query-axios-typescript/#Define_Data_Type
+
+      let result = await axios.post<SearchResponse>(apiUrl + '/search',
+        req,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+      setSearching(false)
+      return result.data
+    } catch (error) {
+      console.log("Search call failed", error)
+      setSearching(false)
+    }
+  } else {
+    console.log("User not available, cannot create search request")
+    setSearching(false)
+    return undefined
+  }
+}
+
+export { fetchSightings, fetchSearchRequests, createSearchRequest };
+export type { SightingGroup, Sighting, SearchRequestComplete, SearchRequest, SearchResponse, SearchingFuncType };
 

@@ -1,6 +1,6 @@
 import React, { useState, MouseEvent } from "react";
-import axios from "axios";
 import { useAuth } from "./AuthProvider";
+import { createSearchRequest, SearchRequest, SearchResponse, SearchingFuncType } from "../services/SightingService";
 
 const apiUrl = import.meta.env.REACT_APP_WATCHER_API_URL
 if (!apiUrl) throw new Error('API URL not defined')
@@ -18,46 +18,20 @@ AREAS.set("pori", "Pori")
 AREAS.set("uto", "Utö")
 AREAS.set("virolahti", "Virolahti")
 
-interface SearchResponse {
-  status: string
-
-}
-async function search(area: string, setSearching: (isSearching: boolean) => void, token: Promise<string | null>) {
-  console.log("Would search: " + area)
-  setSearching(true)
-  try {
-    // https://www.bezkoder.com/react-query-axios-typescript/#Define_Data_Type
-
-    let tokenStr = await token
-    let result = await axios.post<SearchResponse>(apiUrl + '/search',
-      { area: area },
-      {
-        headers: {
-          'Authorization': `Bearer ${tokenStr}`
-        }
-      })
-    setSearching(false)
-    return result
-  } catch (error) {
-    console.log("Search call failed", error)
-    setSearching(false)
-  }
-}
-
-
 type ButtonProps = {
   area: string;
   areaName: string;
 };
 
-// https://github.com/piotrwitek/react-redux-typescript-guide#react--redux-in-typescript---complete-guide
 const SearchButton = ({ area, areaName }: ButtonProps) => {
   var [searching, setSearching] = useState(false)
   let auth = useAuth()
 
   return (
     <button disabled={searching}
-      onClick={(event: MouseEvent) => { search(area, setSearching, auth.getToken()); }} >
+      onClick={(event: MouseEvent) => {
+        let req: SearchRequest = { area: area }
+        createSearchRequest(req, setSearching, auth.user); }} >
       {(searching ? "Searching..." : `Search ${areaName}`)}
     </button>
   )
@@ -65,7 +39,7 @@ const SearchButton = ({ area, areaName }: ButtonProps) => {
 
 export default function AreaButtons() {
   return (
-    <div className="buttonArea">
+    <div className="buttonArea box">
       {Array.from(AREAS.keys()).map((area) => {
         return (<SearchButton key={area} area={area} areaName={AREAS.get(area)!} />)
       })
