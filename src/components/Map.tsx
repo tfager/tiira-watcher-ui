@@ -118,6 +118,7 @@ function getSightingMarker({ si, setSelectedSightingId }: {
 
 export type MapState = {
   setSightingGroups(sgs: SightingGroup[]): void;
+  getMapCenter(): LatLng | null;
 }
 
 export type MapProps = {
@@ -136,6 +137,7 @@ const Map = React.forwardRef<MapState, MapProps>(
     const [totalSightings, setTotalSightings] = useState<number>(0);
     const processIndex = useRef(0);
     const runId = useRef(0); // Ref to store the current run ID
+    const leafletMapRef = useRef<any>(null);
 
     const processChunkOfSightings = (sgs: SightingGroup[], currentRunId: number) => {
       // Check if the current runId matches the ref's runId. If not, abort.
@@ -177,15 +179,25 @@ const Map = React.forwardRef<MapState, MapProps>(
         setSightingMarkers([]); // Clear existing markers
         processIndex.current = 0; // Reset the index
         processChunkOfSightings(sgs, currentRunId); // Pass the currentRunId to processChunk
-      }
-    }));
+      },
+      getMapCenter: () => {
+        if (leafletMapRef.current) {
+          const center = leafletMapRef.current.getCenter();
+          return center; // This is a LatLng object
+        }
+        return null;
+      }}));
 
     const progressTxt = `${unProcessed} / ${totalSightings} sightings loaded`
     const markers = sightingMarkers.map((si) => getSightingMarker({ si, setSelectedSightingId: handleMarkerSelected }))
     return (
       <div className="tiiraMap">
-        <MapContainer center={[60.23664, 25.19183]} zoom={13} scrollWheelZoom={true}
-          style={{ height: "500px", width: "80%" }}>
+        <MapContainer
+          center={[60.23664, 25.19183]}
+          zoom={13}
+          scrollWheelZoom={true}
+          style={{ height: "500px", width: "80%" }}
+          ref={leafletMapRef}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

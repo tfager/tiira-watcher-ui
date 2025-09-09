@@ -7,6 +7,7 @@ import { auth } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { fetchSightings, SightingGroup } from "../services/SightingService";
 import TrackLocationCheckBox from "./TrackLocationCheckBox";
+import CustomSearch from './CustomSearch';
 
 const MainScreen: React.FC = () => {
   const [sightingGroups, setSightingGroups] = useState<SightingGroup[]>()
@@ -52,6 +53,7 @@ const MainScreen: React.FC = () => {
     <div>
       <Map key="map" ref={mapRef} sightingGroups={sightingGroups} childRefs={childRefs} handleMarkerSelected={handleMarkerSelected} />
       <AreaButtons key="areabuttons" />
+      <CustomSearch key="customsearch" mapRef={mapRef} />
       <TrackLocationCheckBox key="tracklocation" />
       <SearchRequests key="searchrequests" searchReqsCompletedCallback={searchReqsCompletedCallback} />
       <SightingList key="sightinglist" sightingGroups={sightingGroups} selected={selectedSightingId} childRefs={childRefs} />
