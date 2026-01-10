@@ -49,6 +49,8 @@ const TrackLocationCheckBox = () => {
 
     serviceWorkerManager.onMessage('SEARCH_COMPLETED', (data) => {
       console.log('Background search completed:', data)
+      // The SearchRequests component will automatically pick up the new search
+      // via its polling mechanism and fetch results when complete
     })
   }, [dispatch, auth.user])
 
