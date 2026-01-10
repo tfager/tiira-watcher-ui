@@ -2,7 +2,9 @@ import React, { JSX, createContext, useContext, useReducer } from "react";
 
 const initialState = (): TiiraWatcherState => {
     return {
-        locationPollingEnabled: false
+        locationPollingEnabled: false,
+        serviceWorkerActive: false,
+        lastInteractionTime: Date.now()
     }
 }
 
@@ -11,6 +13,8 @@ export const TiiraWatcherDispatchContext = createContext<React.Dispatch<TiiraWat
 
 interface TiiraWatcherState {
     locationPollingEnabled: boolean
+    serviceWorkerActive: boolean
+    lastInteractionTime: number
 }
 
 interface TiiraWatcherAction {
@@ -24,13 +28,29 @@ function twReducer(state: TiiraWatcherState, action: TiiraWatcherAction) {
             // TODO: Proper types for actions
             return {
                 ...state,
-                locationPollingEnabled: true
+                locationPollingEnabled: true,
+                serviceWorkerActive: true,
+                lastInteractionTime: Date.now()
             }
         }
         case 'location_polling_stopped': {
             return {
                 ...state,
-                locationPollingEnabled: false
+                locationPollingEnabled: false,
+                serviceWorkerActive: false
+            }
+        }
+        case 'update_interaction_time': {
+            return {
+                ...state,
+                lastInteractionTime: Date.now()
+            }
+        }
+        case 'service_worker_auto_stopped': {
+            return {
+                ...state,
+                locationPollingEnabled: false,
+                serviceWorkerActive: false
             }
         }
         default: {
