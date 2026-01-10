@@ -32,10 +32,25 @@ const TrackLocationCheckBox = () => {
       }
     })
 
+    serviceWorkerManager.onMessage('REQUEST_TOKEN_REFRESH', async () => {
+      // Refresh token and send to service worker
+      if (auth.user) {
+        try {
+          const token = await auth.user.getIdToken(true); // Force refresh
+          serviceWorkerManager.sendMessage({
+            type: 'TOKEN_REFRESH',
+            token: token
+          });
+        } catch (error) {
+          console.error('Error refreshing token:', error);
+        }
+      }
+    })
+
     serviceWorkerManager.onMessage('SEARCH_COMPLETED', (data) => {
       console.log('Background search completed:', data)
     })
-  }, [dispatch])
+  }, [dispatch, auth.user])
 
   const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
