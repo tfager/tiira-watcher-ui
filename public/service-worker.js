@@ -103,7 +103,6 @@ function stopTracking() {
   currentToken = null;
   currentApiUrl = null;
 }
-}
 
 function updateInteractionTime() {
   lastInteractionTime = Date.now();
