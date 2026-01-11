@@ -2,13 +2,12 @@
 // Handles background location tracking and continuous searches
 
 const SEARCH_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
-const LOCATION_CHECK_INTERVAL_MS = 30 * 1000; // 30 seconds
+const LOCATION_CHECK_INTERVAL_MS = 30 * 1000; // 30 seconds - minimum interval between location updates
 const AUTO_STOP_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour
 const TOKEN_REFRESH_INTERVAL_MS = 45 * 60 * 1000; // 45 minutes (tokens expire in 1 hour)
 const SEARCH_RADIUS_KM = 3;
 
 let lastInteractionTime = Date.now();
-let locationCheckTimer = null;
 let searchTimer = null;
 let autoStopTimer = null;
 let tokenRefreshTimer = null;
@@ -41,13 +40,14 @@ function startTracking(apiUrl, token, userId) {
   currentApiUrl = apiUrl;
   currentToken = token;
   
-  // Start location polling
-  if (!locationCheckTimer) {
-    locationCheckTimer = setInterval(() => {
-      checkLocation();
-    }, LOCATION_CHECK_INTERVAL_MS);
-    checkLocation(); // Check immediately
-  }
+  // Start watchPosition on the main thread (only send message once, not on a timer)
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'START_WATCH_POSITION'
+      });
+    });
+  });
   
   // Start search interval
   if (!searchTimer) {
@@ -75,10 +75,14 @@ function startTracking(apiUrl, token, userId) {
 function stopTracking() {
   console.log('[Service Worker] Stopping tracking');
   
-  if (locationCheckTimer) {
-    clearInterval(locationCheckTimer);
-    locationCheckTimer = null;
-  }
+  // Stop watchPosition on the main thread
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'STOP_WATCH_POSITION'
+      });
+    });
+  });
   
   if (searchTimer) {
     clearInterval(searchTimer);
@@ -98,6 +102,7 @@ function stopTracking() {
   lastLocation = null;
   currentToken = null;
   currentApiUrl = null;
+}
 }
 
 function updateInteractionTime() {
@@ -122,18 +127,6 @@ function checkAutoStop() {
       });
     });
   }
-}
-
-function checkLocation() {
-  // Service workers don't have direct access to Geolocation API
-  // Request location from the main thread
-  self.clients.matchAll().then(clients => {
-    clients.forEach(client => {
-      client.postMessage({
-        type: 'REQUEST_LOCATION'
-      });
-    });
-  });
 }
 
 function requestTokenRefresh() {

@@ -5,44 +5,83 @@ import { useAuth } from './AuthProvider'
 import { createSearchRequest, SearchRequest } from '../services/SightingService'
 import { LatLng } from 'leaflet'
 
+const LOCATION_CHECK_INTERVAL_MS = 30 * 1000; // 30 seconds - minimum interval between location updates
+
 const TrackLocationCheckBox = () => {
   const state = useTiiraWatcherState()
   const dispatch = useTiiraWatcherDispatch()
   const auth = useAuth()
 
   useEffect(() => {
+    let watchId: number | null = null
+    let lastLocationTime = 0
+
     // Set up service worker message handlers
     serviceWorkerManager.onMessage('AUTO_STOPPED', (data) => {
       console.log('Service worker auto-stopped:', data.reason)
       dispatch({ type: 'service_worker_auto_stopped' })
+      
+      // Stop watching position when service worker stops
+      if (watchId !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchId)
+        watchId = null
+      }
     })
 
-    serviceWorkerManager.onMessage('REQUEST_LOCATION', () => {
-      // Respond to location request from service worker
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
+    serviceWorkerManager.onMessage('START_WATCH_POSITION', () => {
+      // Start watching position continuously
+      if (navigator.geolocation && watchId === null) {
+        watchId = navigator.geolocation.watchPosition(
           (position) => {
-            const location = {
-              pos: new LatLng(position.coords.latitude, position.coords.longitude),
-              timestamp: new Date()
+            const currentTime = Date.now()
+            
+            // Filter: only process if enough time has passed since last update
+            if (currentTime - lastLocationTime >= LOCATION_CHECK_INTERVAL_MS) {
+              lastLocationTime = currentTime
+              
+              const location = {
+                pos: new LatLng(position.coords.latitude, position.coords.longitude),
+                timestamp: new Date()
+              }
+              
+              // Store location for LocationTrace component
+              dispatch({ type: 'add_background_location', location })
+              
+              // Send location to service worker
+              serviceWorkerManager.sendLocation(
+                position.coords.latitude,
+                position.coords.longitude
+              )
             }
-            
-            // Store location for LocationTrace component
-            dispatch({ type: 'add_background_location', location })
-            
-            // Send location to service worker
-            serviceWorkerManager.sendLocation(
-              position.coords.latitude,
-              position.coords.longitude
-            )
           },
           (error) => {
-            console.error('Error getting location:', error)
+            console.error('Error watching location:', error)
+          },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 0
           }
         )
       }
     })
 
+    serviceWorkerManager.onMessage('STOP_WATCH_POSITION', () => {
+      // Stop watching position
+      if (watchId !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchId)
+        watchId = null
+      }
+    })
+    
+    // Cleanup on unmount
+    return () => {
+      if (watchId !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchId)
+      }
+    }
+  }, [dispatch])
+
+  useEffect(() => {
     serviceWorkerManager.onMessage('REQUEST_TOKEN_REFRESH', async () => {
       // Refresh token and send to service worker
       if (auth.user) {
@@ -77,7 +116,7 @@ const TrackLocationCheckBox = () => {
         }
       }
     })
-  }, [dispatch, auth.user])
+  }, [auth.user])
 
   const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
