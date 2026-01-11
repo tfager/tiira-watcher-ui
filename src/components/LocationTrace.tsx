@@ -1,7 +1,7 @@
 import { LatLng, LocationEvent } from "leaflet"
 import React, { JSX, useEffect, useRef, useState } from "react"
 import { CircleMarker, useMap } from 'react-leaflet'
-import { useTiiraWatcherState } from "./TiiraWatcherContext"
+import { useTiiraWatcherState, useTiiraWatcherDispatch } from "./TiiraWatcherContext"
 
 const MAX_ENTRIES = 15
 const POLL_INTERVAL_SECS = 30
@@ -62,7 +62,22 @@ const LocationTrace = ():  JSX.Element => {
     const [entries, setEntries] = useState<TraceEntry[]>([])
     const map = useMap()
     const state = useTiiraWatcherState()
+    const dispatch = useTiiraWatcherDispatch()
     const timerIdRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Integrate background locations when user becomes active
+    useEffect(() => {
+        if (state.backgroundLocations.length > 0) {
+            console.log(`Adding ${state.backgroundLocations.length} background locations to trace`)
+            let updatedEntries = entries
+            state.backgroundLocations.forEach(bgLoc => {
+                updatedEntries = addNewEntry(updatedEntries, bgLoc.pos, bgLoc.timestamp)
+            })
+            setEntries(updatedEntries)
+            // Clear background locations after integrating them
+            dispatch({ type: 'clear_background_locations' })
+        }
+    }, [state.backgroundLocations, entries, dispatch])
 
     useEffect(() => {
         const pollingCallback = async () => {

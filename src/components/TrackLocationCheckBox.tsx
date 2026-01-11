@@ -2,6 +2,8 @@ import React, { useEffect } from 'react'
 import { useTiiraWatcherState, useTiiraWatcherDispatch } from './TiiraWatcherContext'
 import { serviceWorkerManager } from '../services/ServiceWorkerService'
 import { useAuth } from './AuthProvider'
+import { createSearchRequest, SearchRequest } from '../services/SightingService'
+import { LatLng } from 'leaflet'
 
 const TrackLocationCheckBox = () => {
   const state = useTiiraWatcherState()
@@ -20,6 +22,15 @@ const TrackLocationCheckBox = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
+            const location = {
+              pos: new LatLng(position.coords.latitude, position.coords.longitude),
+              timestamp: new Date()
+            }
+            
+            // Store location for LocationTrace component
+            dispatch({ type: 'add_background_location', location })
+            
+            // Send location to service worker
             serviceWorkerManager.sendLocation(
               position.coords.latitude,
               position.coords.longitude
@@ -47,10 +58,24 @@ const TrackLocationCheckBox = () => {
       }
     })
 
-    serviceWorkerManager.onMessage('SEARCH_COMPLETED', (data) => {
-      console.log('Background search completed:', data)
-      // The SearchRequests component will automatically pick up the new search
-      // via its polling mechanism and fetch results when complete
+    serviceWorkerManager.onMessage('PERFORM_SEARCH', async (data) => {
+      console.log('Performing search via SightingService:', data.searchRequest)
+      
+      // Use the existing SightingService to perform the search
+      if (auth.user) {
+        try {
+          const result = await createSearchRequest(
+            data.searchRequest as SearchRequest,
+            () => {}, // No-op for setSearching callback in background
+            auth.user
+          )
+          console.log('Background search completed:', result)
+          // The SearchRequests component will automatically pick up the new search
+          // via its polling mechanism and fetch results when complete
+        } catch (error) {
+          console.error('Background search failed:', error)
+        }
+      }
     })
   }, [dispatch, auth.user])
 

@@ -153,43 +153,22 @@ function performSearch() {
     return;
   }
   
-  if (!currentToken || !currentApiUrl) {
-    console.log('[Service Worker] No token or API URL available for search');
-    return;
-  }
-  
   console.log('[Service Worker] Performing search at location:', lastLocation);
   
+  // Request main thread to perform search using SightingService
   const searchRequest = {
     center_lat: lastLocation.lat,
     center_lon: lastLocation.lng,
     diag_half_km: SEARCH_RADIUS_KM
   };
   
-  fetch(`${currentApiUrl}/search`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${currentToken}`
-    },
-    body: JSON.stringify(searchRequest)
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log('[Service Worker] Search request created:', data);
-    
-    // Notify the main thread about the search
-    self.clients.matchAll().then(clients => {
-      clients.forEach(client => {
-        client.postMessage({
-          type: 'SEARCH_COMPLETED',
-          data: data
-        });
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'PERFORM_SEARCH',
+        searchRequest: searchRequest
       });
     });
-  })
-  .catch(error => {
-    console.error('[Service Worker] Search request failed:', error);
   });
 }
 
