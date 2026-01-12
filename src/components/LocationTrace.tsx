@@ -1,7 +1,7 @@
 import { LatLng, LocationEvent } from "leaflet"
 import React, { JSX, useEffect, useRef, useState } from "react"
 import { CircleMarker, useMap } from 'react-leaflet'
-import { useTiiraWatcherState } from "./TiiraWatcherContext"
+import { useTiiraWatcherState, useTiiraWatcherDispatch } from "./TiiraWatcherContext"
 
 const MAX_ENTRIES = 15
 const POLL_INTERVAL_SECS = 30
@@ -62,38 +62,68 @@ const LocationTrace = ():  JSX.Element => {
     const [entries, setEntries] = useState<TraceEntry[]>([])
     const map = useMap()
     const state = useTiiraWatcherState()
-    const timerIdRef = useRef<NodeJS.Timeout | null>(null);
+    const dispatch = useTiiraWatcherDispatch()
+    const watchIdRef = useRef<number | null>(null);
+    const lastLocationTimeRef = useRef<number>(0);
+
+    // Integrate background locations when user becomes active
+    useEffect(() => {
+        if (state.backgroundLocations.length > 0) {
+            console.log(`Adding ${state.backgroundLocations.length} background locations to trace`)
+            let updatedEntries = entries
+            state.backgroundLocations.forEach(bgLoc => {
+                updatedEntries = addNewEntry(updatedEntries, bgLoc.pos, bgLoc.timestamp)
+            })
+            setEntries(updatedEntries)
+            // Clear background locations after integrating them
+            dispatch({ type: 'clear_background_locations' })
+        }
+    }, [state.backgroundLocations, entries, dispatch])
 
     useEffect(() => {
-        const pollingCallback = async () => {
-            map.locate().on("locationfound", function (e: LocationEvent) {
-                setEntries(addNewEntry(entries, e.latlng, new Date()))
-            }, 5000)
-        }
-
-        const startPolling = () => {
-            // Polling every POLL_INTERVAL seconds
-            if (timerIdRef.current == null) {
-              timerIdRef.current = setInterval(pollingCallback, POLL_INTERVAL_SECS * 1000);
+        const startWatching = () => {
+            // Use watchPosition instead of polling with getCurrentPosition
+            if (navigator.geolocation && watchIdRef.current === null) {
+                watchIdRef.current = navigator.geolocation.watchPosition(
+                    (position) => {
+                        const currentTime = Date.now()
+                        
+                        // Filter: only process if enough time has passed since last update
+                        if (currentTime - lastLocationTimeRef.current >= POLL_INTERVAL_SECS * 1000) {
+                            lastLocationTimeRef.current = currentTime
+                            
+                            const latlng = new LatLng(position.coords.latitude, position.coords.longitude)
+                            setEntries(prevEntries => addNewEntry(prevEntries, latlng, new Date()))
+                        }
+                    },
+                    (error) => {
+                        console.error('Error watching location:', error)
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 0
+                    }
+                )
             }
         };
       
-        const stopPolling = () => {
-        if (timerIdRef.current!= null)
-            clearInterval(timerIdRef.current);
-            timerIdRef.current = null;
+        const stopWatching = () => {
+            if (watchIdRef.current !== null && navigator.geolocation) {
+                navigator.geolocation.clearWatch(watchIdRef.current);
+                watchIdRef.current = null;
+            }
         };
     
         if (state.locationPollingEnabled) {
-            startPolling();
+            startWatching();
         } else {
-            stopPolling();
+            stopWatching();
         }
     
         return () => {
-            stopPolling()
+            stopWatching()
         }
-    }, [entries, map, timerIdRef, state.locationPollingEnabled])
+    }, [state.locationPollingEnabled])
     // Mind https://stackoverflow.com/questions/67148553/react-leaflet-polyline-does-not-change-colour-despite-colour-value-in-redux-sto:
     // Use pathOptions, not just color/opacity.
     return (
