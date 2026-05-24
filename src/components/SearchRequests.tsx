@@ -16,7 +16,7 @@ const getStatusClass = (status: string) => {
 export default function SearchRequests({searchReqsCompletedCallback}: {searchReqsCompletedCallback: () => void}) {
   const [searchRequests, setSearchRequests] = useState<SearchRequestComplete[]>([]);
   const user = useAuthState(auth)[0];
-  const timerIdRef = useRef<NodeJS.Timeout | null>(null);
+  const timerIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isPollingEnabled, setIsPollingEnabled] = useState(true);
 
   useEffect(() => {
