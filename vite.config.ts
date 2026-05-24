@@ -6,6 +6,9 @@ import commonjs from 'vite-plugin-commonjs'
 export default defineConfig({
   base: '/',
   plugins: [react(), commonjs()],
+  build: {
+    chunkSizeWarningLimit: 1000,
+  },
   envPrefix: 'REACT_APP_',
   test: {
     globals: true,
